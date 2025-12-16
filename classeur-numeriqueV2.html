@@ -599,19 +599,46 @@
             </div>
         </div>
     </div>
+<div id="copyModal" class="modal">
+    <div class="modal-content">
+        <h3>Copier le Contenu Pédagogique</h3>
+        <span class="close-button" onclick="closeCopyModal()">&times;</span>
+        <form id="copyForm">
+            <p><strong>Cours Source :</strong> <span id="sourceCourseInfo"></span></p>
+            
+            <hr style="margin: 15px 0;">
 
+            <h4>Choisir la destination</h4>
+
+            <label for="targetClassSelect">Classe Cible</label>
+            <select id="targetClassSelect" required onchange="renderTargetCourseSelect()">
+                </select>
+
+            <label for="targetCourseSelect">Cours Cible (Numéro Global)</label>
+            <select id="targetCourseSelect" required>
+                </select>
+            
+            <div style="margin-top: 20px; padding: 10px; border: 1px solid #ffccb3; border-radius: 4px; background: #fff2e6;">
+                <p>⚠️ **Attention :** Seul le contenu pédagogique (Séquence, Séance N°, Contenu, Devoirs, Notes) sera copié. La date du cours cible ne sera **PAS** modifiée.</p>
+            </div>
+
+            <button type="submit" class="btn-primary" style="margin-top: 20px;">Confirmer la Copie</button>
+        </form>
+    </div>
+</div>
+    
 <script>
     // État de l'application
     let state = {
         currentClass: '',
         currentPeriod: 1,
-        classes: [], // Initialisation en tant que tableau vide
+        classes: [],
         courses: {},
         weekNotes: {},
         sequences: {}
     };
 
-    let currentEditingCourse = null;
+    let currentEditingCourse = null; // Key du cours actuel en édition (Source de la copie)
     let currentEditingWeek = null;
 
     // Charger les données depuis le stockage
@@ -620,21 +647,17 @@
         
         if (saved) {
             try {
-                // Tenter de charger les données sauvegardées
                 const loadedState = JSON.parse(saved);
-                // Fusionner avec l'état par défaut pour garantir toutes les clés
                 state = { ...state, ...loadedState };
             } catch (e) {
                 console.error("Erreur lors du chargement des données. L'état par défaut sera utilisé.", e);
             }
         }
         
-        // CORRECTION DE L'ERREUR 1 : Assurer que state.classes est toujours un tableau
         if (!state.classes || !Array.isArray(state.classes)) {
             state.classes = [];
         }
 
-        // Si aucune classe n'existe, créer des classes par défaut
         if (state.classes.length === 0) {
             state.classes = [
                 { id: '3-3', name: '3°3', pattern: '3-2' },
@@ -645,11 +668,9 @@
                 { id: '5-2', name: '5°2', pattern: '3-2' },
                 { id: '6-1', name: '6°1', pattern: '3-2' }
             ];
-            // Définir la classe courante si on vient de créer les classes par défaut
             state.currentClass = state.classes[0].id;
         }
 
-        // S'assurer qu'une classe courante est définie si des classes existent mais pas de currentClass
         if (!state.currentClass && state.classes.length > 0) {
             state.currentClass = state.classes[0].id;
         }
@@ -707,6 +728,12 @@
             e.preventDefault();
             saveWeekNotes();
         });
+
+        // NOUVEAU: Listener pour la modale de copie
+        document.getElementById('copyForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            confirmCopy();
+        });
     }
 
     function updateClassSelect() {
@@ -732,12 +759,10 @@
 
     function getWeekPattern(weekNumber) {
         const currentClass = getCurrentClass();
-        if (!currentClass) return { type: 'A', courses: 3 }; // Retour par défaut sécurisé
+        if (!currentClass) return { type: 'A', courses: 3 }; 
         
-        // Semaine paire = B, Semaine impaire = A
         const isWeekA = weekNumber % 2 === 1;
         
-        // Sécurité supplémentaire si le pattern est mal formé
         const parts = currentClass.pattern ? currentClass.pattern.split('-') : ['3', '2'];
         const [coursesA, coursesB] = parts.map(Number);
         
@@ -751,7 +776,6 @@
         const grid = document.getElementById('calendarGrid');
         grid.innerHTML = '';
         
-        // S'assurer qu'il y a des classes à afficher
         if (state.classes.length === 0) {
             grid.innerHTML = '<div class="empty-state">Veuillez d\'abord ajouter une classe via le bouton "Gérer les classes".</div>';
             return;
@@ -768,7 +792,6 @@
             
             let coursesHTML = '';
             
-            // Calculer le numéro de cours global
             let globalCourseNum = 0;
             for (let w = 1; w < weekNumber; w++) {
                 globalCourseNum += getWeekPattern(w).courses;
@@ -779,7 +802,6 @@
                 coursesHTML += renderCourseSlot(weekNumber, i + 1, globalCourseNum);
             }
             
-            // Si c'est une semaine avec moins de 3 cours, ajouter une case notes
             if (pattern.courses < 3) {
                 coursesHTML += renderNotesSlot(weekNumber);
             }
@@ -796,13 +818,10 @@
         }
     }
 
-    // MODIFICATION DE CETTE FONCTION
     function renderCourseSlot(week, slotNum, globalNum) {
         const key = `${state.currentClass}-W${week}-C${slotNum}`;
-        // Utiliser || {} pour garantir que course est un objet même s'il n'existe pas
         const course = state.courses[key] || {}; 
         
-        // NOUVEAU : Construire l'affichage de la séquence et de la séance
         let sequenceDisplay = '';
         if (course.sequence) {
             sequenceDisplay = `<strong>Séquence:</strong> ${course.sequence}`;
@@ -815,7 +834,8 @@
             <div class="course-slot" onclick="editCourse('${key}', ${week}, ${slotNum}, ${globalNum})">
                 <h4>Cours ${globalNum}</h4>
                 ${course.date ? `<div class="course-date">📅 ${formatDate(course.date)}</div>` : '<div class="course-date">⚠️ Date non définie</div>'}
-                ${sequenceDisplay ? `<div class="course-content">${sequenceDisplay}</div>` : ''} ${course.content ? `<div class="course-content">${truncate(course.content, 100)}</div>` : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'}
+                ${sequenceDisplay ? `<div class="course-content">${sequenceDisplay}</div>` : ''} 
+                ${course.content ? `<div class="course-content">${truncate(course.content, 100)}</div>` : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'}
                 ${course.homework ? `<div class="course-homework"><strong>📝 À faire:</strong> ${truncate(course.homework, 80)}</div>` : ''}
                 ${course.notes ? `<div class="course-notes"><strong>💭 Notes:</strong> ${truncate(course.notes, 80)}</div>` : ''}
             </div>
@@ -837,7 +857,6 @@
     function formatDate(dateStr) {
         if (!dateStr) return '';
         const date = new Date(dateStr);
-        // Ajout d'un jour pour corriger le décalage UTC/local lors de la création d'une date (Date('AAAA-MM-JJ') crée à minuit UTC)
         date.setDate(date.getDate() + 1); 
         return date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     }
@@ -847,7 +866,6 @@
         return text.length > length ? text.substring(0, length) + '...' : text;
     }
 
-    // MODIFICATION DE CETTE FONCTION
     function editCourse(key, week, slotNum, globalNum) {
         currentEditingCourse = key;
         const course = state.courses[key] || {};
@@ -856,11 +874,27 @@
         document.getElementById('courseContent').value = course.content || '';
         document.getElementById('courseHomework').value = course.homework || '';
         document.getElementById('courseNotes').value = course.notes || '';
-        
-        // NOUVEAU : Lire le numéro de séance sauvegardé, ou 1 par défaut
-        // Utiliser course.sessionNum || 1 pour initialiser à 1 si non défini
         document.getElementById('courseSessionNum').value = course.sessionNum || 1; 
         
+        // NOUVEAU: Afficher le bouton de copie et ajouter son listener
+        const copyButton = document.getElementById('openCopyModalButton');
+        if (!copyButton) {
+             // Ajouter un bouton d'ouverture de la modale de copie dans courseModal si non présent
+             const form = document.getElementById('courseForm');
+             const existingSaveButton = form.querySelector('button[type="submit"]');
+             
+             const btn = document.createElement('button');
+             btn.type = 'button';
+             btn.id = 'openCopyModalButton';
+             btn.className = 'btn-secondary'; // Un style secondaire pour le distinguer
+             btn.textContent = 'Copier ce contenu vers une autre classe';
+             btn.onclick = openCopyModal;
+             btn.style.marginRight = '10px';
+             
+             form.insertBefore(btn, existingSaveButton);
+        }
+
+
         // Charger les séquences dans le select
         const select = document.getElementById('courseSequence');
         select.innerHTML = '<option value="">-- Choisir une séquence --</option>';
@@ -883,7 +917,6 @@
         currentEditingCourse = null;
     }
 
-    // MODIFICATION DE CETTE FONCTION
     function saveCourse() {
         if (!currentEditingCourse) return;
         
@@ -905,14 +938,14 @@
         const content = document.getElementById('courseContent').value || defaultContent;
         const homework = document.getElementById('courseHomework').value || defaultHomework;
         
-        // NOUVEAU : Lire et valider le numéro de séance
         const sessionNumInput = document.getElementById('courseSessionNum').value;
         const sessionNum = parseInt(sessionNumInput, 10);
         
+        // Sauvegarder le cours actuel
         state.courses[currentEditingCourse] = {
             date: document.getElementById('courseDate').value,
             sequence: sequenceName,
-            sessionNum: sessionNum > 0 ? sessionNum : 1, // Sauvegarder le numéro de séance (au moins 1)
+            sessionNum: sessionNum > 0 ? sessionNum : 1,
             content: content,
             homework: homework,
             notes: document.getElementById('courseNotes').value
@@ -944,10 +977,196 @@
         renderCalendar();
         closeNotesModal();
     }
+    
+    // =========================================================
+    // NOUVELLES FONCTIONS DE COPIE FLEXIBLE
+    // =========================================================
 
+    function openCopyModal() {
+        if (!currentEditingCourse) return;
+        
+        // 1. Afficher les infos du cours source
+        const sourceCourse = state.courses[currentEditingCourse] || {};
+        const [sourceClassId, sourceWeek, sourceSlot] = currentEditingCourse.split('-');
+        const sourceClassName = state.classes.find(c => c.id === sourceClassId)?.name || 'Classe inconnue';
+        
+        document.getElementById('sourceCourseInfo').innerHTML = 
+            `<strong>${sourceClassName}</strong> (Cours: ${sourceCourse.sequence || 'Non défini'})`;
+
+        // 2. Remplir le sélecteur de classe cible
+        renderTargetClassSelect(sourceClassId);
+        
+        // 3. Fermer la modale d'édition et ouvrir la modale de copie
+        document.getElementById('courseModal').classList.remove('active');
+        document.getElementById('copyModal').classList.add('active');
+    }
+
+    function closeCopyModal() {
+        document.getElementById('copyModal').classList.remove('active');
+    }
+
+    function renderTargetClassSelect(sourceClassId) {
+        const select = document.getElementById('targetClassSelect');
+        select.innerHTML = '';
+        
+        // Filtrer les classes pour exclure la classe source
+        const targetClasses = state.classes.filter(c => c.id !== sourceClassId);
+
+        if (targetClasses.length === 0) {
+            select.innerHTML = '<option value="">-- Aucune autre classe --</option>';
+            return;
+        }
+
+        select.innerHTML = targetClasses.map(c => 
+            `<option value="${c.id}">${c.name}</option>`
+        ).join('');
+        
+        // Déclencher le rendu du sélecteur de cours cible pour la première classe listée
+        renderTargetCourseSelect();
+    }
+    
+    // Fonction pour générer une liste d'options de cours pour la classe cible sélectionnée
+    function renderTargetCourseSelect() {
+        const targetClassId = document.getElementById('targetClassSelect').value;
+        const select = document.getElementById('targetCourseSelect');
+        select.innerHTML = '';
+        
+        if (!targetClassId) return;
+
+        // Calculer le nombre total de cours pour cette classe sur 9 périodes (36 semaines)
+        let totalCourses = 0;
+        for (let week = 1; week <= 36; week++) {
+            // NOTE: Nous devons trouver le pattern de la classe cible pour le calcul
+            const targetClass = state.classes.find(c => c.id === targetClassId);
+            if (targetClass) {
+                const isWeekA = week % 2 === 1;
+                const parts = targetClass.pattern ? targetClass.pattern.split('-') : ['3', '2'];
+                const [coursesA, coursesB] = parts.map(Number);
+                totalCourses += isWeekA ? coursesA : coursesB;
+            } else {
+                // Par défaut si classe non trouvée (ne devrait pas arriver)
+                totalCourses += (week % 2 === 1) ? 3 : 2; 
+            }
+        }
+        
+        // Remplir le sélecteur avec tous les slots possibles
+        for (let i = 1; i <= totalCourses; i++) {
+            // Le "value" doit contenir toutes les infos pour recréer la clé: ClassID-GlobalCourseNum
+            const option = document.createElement('option');
+            option.value = targetClassId + '-C' + i; 
+            option.textContent = `Cours Global N° ${i}`;
+            
+            const targetKeyPrefix = targetClassId + '-W';
+            
+            // Si le cours cible a déjà du contenu, l'afficher dans le label
+            const keyPrefix = targetClassId + '-W';
+            let existingInfo = '';
+            
+            // La logique exacte de conversion du Numéro Global vers WX-CY est complexe
+            // Pour simplifier l'affichage ici, nous allons seulement indiquer si le slot est déjà pris.
+            
+            // Vérification simplifiée si le cours est déjà planifié (si on trouve une clé qui correspond)
+            // Cela nécessiterait de reconstruire la clé exacte pour la classe cible.
+            // Pour l'instant, nous laissons simple : N° du cours global.
+            
+            select.appendChild(option);
+        }
+    }
+    
+    function convertGlobalToWeekSlot(classId, globalCourseNum) {
+        // Cette fonction est complexe car elle dépend du pattern de la classe.
+        // C'est une simplification pour déterminer le Wx-Cy à partir du Numéro Global.
+        
+        const targetClass = state.classes.find(c => c.id === classId);
+        if (!targetClass) return null;
+        
+        let cumulativeCourses = 0;
+        let week = 1;
+        
+        while (week <= 36) { // Max 36 semaines
+            const isWeekA = week % 2 === 1;
+            const [coursesA, coursesB] = targetClass.pattern.split('-').map(Number);
+            const coursesInWeek = isWeekA ? coursesA : coursesB;
+            
+            for (let slot = 1; slot <= coursesInWeek; slot++) {
+                cumulativeCourses++;
+                if (cumulativeCourses === globalCourseNum) {
+                    return `W${week}-C${slot}`;
+                }
+            }
+            week++;
+        }
+        return null; 
+    }
+
+    function confirmCopy() {
+        const targetClassId = document.getElementById('targetClassSelect').value;
+        const targetCourseValue = document.getElementById('targetCourseSelect').value; // Contient ClassID-C[GlobalNum]
+        
+        if (!targetClassId || !targetCourseValue || !currentEditingCourse) {
+            alert("Erreur: La source ou la destination n'est pas sélectionnée.");
+            return;
+        }
+
+        // 1. Déterminer le numéro de cours global cible
+        // targetCourseValue est de la forme 'ClassID-C[GlobalNum]'
+        const targetGlobalCourseNum = parseInt(targetCourseValue.split('-C')[1], 10);
+        if (isNaN(targetGlobalCourseNum)) {
+             alert("Erreur dans la sélection du cours cible.");
+             return;
+        }
+
+        // 2. Convertir le numéro global en Wx-Cy pour la classe cible
+        const weekSlot = convertGlobalToWeekSlot(targetClassId, targetGlobalCourseNum);
+        if (!weekSlot) {
+            alert("Erreur: Impossible de déterminer le slot semaine/cours cible.");
+            return;
+        }
+
+        // 3. Déterminer la clé cible
+        const targetKey = `${targetClassId}-${weekSlot}`;
+
+        // 4. Récupérer les données sources
+        const sourceCourse = state.courses[currentEditingCourse] || {};
+        
+        // Si le cours source n'a pas de contenu pédagogique, demander confirmation
+        if (!sourceCourse.sequence && !sourceCourse.content && !sourceCourse.homework) {
+            if (!confirm("Le cours source ne contient pas de contenu pédagogique significatif. Confirmer la copie vide ?")) {
+                return;
+            }
+        }
+        
+        // 5. Préparer les données à copier (exclure la date)
+        const dataToCopy = {
+            sequence: sourceCourse.sequence || '',
+            sessionNum: sourceCourse.sessionNum || 1,
+            content: sourceCourse.content || '',
+            homework: sourceCourse.homework || '',
+            notes: sourceCourse.notes || ''
+        };
+
+        // 6. Récupérer la date du cours cible existant
+        const existingCourse = state.courses[targetKey] || {};
+        const targetDate = existingCourse.date || '';
+
+        // 7. Effectuer la copie/fusion
+        state.courses[targetKey] = {
+            date: targetDate, // Conserver l'ancienne date
+            ...dataToCopy       // Ajouter le nouveau contenu
+        };
+        
+        saveData();
+        renderCalendar();
+        closeCopyModal();
+        alert(`Contenu dupliqué avec succès vers la classe ${targetClassId} (Cours N°${targetGlobalCourseNum})`);
+    }
+
+    // =========================================================
+    // Le reste du code (ClassManager, SequenceManager, Export/Import) est ici...
+    // =========================================================
+    
     // Gestion des classes
     function openClassManager() {
-        // CORRECTION/SECURITE 2 : S'assurer que classes est défini avant de l'utiliser
         if (!state.classes) {
             state.classes = [];
         }
@@ -970,7 +1189,6 @@
         const pattern = document.querySelector('input[name="weekPattern"]:checked').value;
         const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
         
-        // Vérifier si la classe existe déjà
         if (state.classes.find(c => c.id === id)) {
             alert('Cette classe existe déjà');
             return;
@@ -996,7 +1214,6 @@
     function renderClassList() {
         const list = document.getElementById('classList');
         
-        // Sécurité supplémentaire si state.classes est undefined (même si loadData devrait le corriger)
         if (!state.classes || state.classes.length === 0) {
             list.innerHTML = '<div class="empty-state">Aucune classe définie</div>';
             return;
@@ -1028,7 +1245,6 @@
             const deletedId = state.classes[idx].id;
             state.classes.splice(idx, 1);
             
-            // Si on supprime la classe active, choisir la première
             if (state.currentClass === deletedId) {
                 state.currentClass = state.classes.length > 0 ? state.classes[0].id : '';
             }
