@@ -468,39 +468,34 @@
     </div>
 
     <!-- Modal pour éditer un cours -->
-    <div class="modal" id="courseModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Éditer le cours</h2>
-                <button class="close-btn" onclick="closeCourseModal()">Fermer</button>
-            </div>
-            <form id="courseForm">
-                <div class="form-group">
-                    <label>Date du cours</label>
-                    <input type="date" id="courseDate" required>
-                </div>
-                <div class="form-group">
-                    <label>Séquence</label>
-                    <select id="courseSequence">
-                        <option value="">-- Choisir une séquence --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Contenu du cours</label>
-                    <textarea id="courseContent" placeholder="Détails du cours..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Travail à faire</label>
-                    <textarea id="courseHomework" placeholder="Devoirs, exercices..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Notes personnelles</label>
-                    <textarea id="courseNotes" placeholder="Remarques, observations..."></textarea>
-                </div>
-                <button type="submit" class="save-btn">💾 Enregistrer</button>
-            </form>
-        </div>
+   <div id="courseModal" class="modal">
+    <div class="modal-content">
+        <h3>Éditer le cours</h3>
+        <span class="close-button" onclick="closeCourseModal()">&times;</span>
+        <form id="courseForm">
+            
+            <label for="courseSequence">Séquence (Thème)</label>
+            <select id="courseSequence" required>
+                </select>
+            
+            <label for="courseSessionNum">Numéro de Séance dans la séquence</label>
+            <input type="number" id="courseSessionNum" min="1" value="1" placeholder="Ex: 1, 2, 3..." style="margin-bottom: 15px;">
+            <label for="courseDate">Date du cours</label>
+            <input type="date" id="courseDate" required>
+
+            <label for="courseContent">Contenu du cours</label>
+            <textarea id="courseContent" rows="4"></textarea>
+
+            <label for="courseHomework">Devoirs / À faire</label>
+            <textarea id="courseHomework" rows="2"></textarea>
+
+            <label for="courseNotes">Notes personnelles</label>
+            <textarea id="courseNotes" rows="2"></textarea>
+
+            <button type="submit" class="btn-primary">Sauvegarder</button>
+        </form>
     </div>
+</div>
 
     <!-- Modal pour éditer les notes de semaine -->
     <div class="modal" id="notesModal">
