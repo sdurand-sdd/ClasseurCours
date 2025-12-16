@@ -325,7 +325,25 @@
 </head>
 </head>
 <body>
-
+<div id="auth-section" style="padding: 50px; text-align: center; max-width: 400px; margin: 100px auto; background-color: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+    <h2>Accès au Classeur Numérique</h2>
+    <p>Veuillez vous connecter pour accéder à vos données sécurisées.</p>
+    
+    <div class="form-group mb-2">
+        <input type="email" id="auth-email" placeholder="Adresse E-mail" class="form-control">
+    </div>
+    <div class="form-group mb-3">
+        <input type="password" id="auth-password" placeholder="Mot de passe" class="form-control">
+    </div>
+    
+    <button onclick="signIn()" class="btn btn-primary">
+        Se connecter
+    </button>
+    <button onclick="signUp()" class="btn btn-success" style="margin-left: 10px;">
+        S'inscrire (Première Utilisation)
+    </button>
+</div>
+<div id="app-section" style="display: none;">
     <div class="container">
         <div class="header">
             <h1>📚 Classeur Numérique Pédagogique</h1>
@@ -535,7 +553,12 @@
             </div>
         </div>
     </div>
-
+<div style="text-align: center; margin-top: 20px; padding-bottom: 20px;">
+        <button onclick="signOutUser()" class="btn btn-secondary">
+            <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </button>
+    </div>
+</div>
 
     
     <script>
@@ -558,6 +581,14 @@
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.database();
+    // NOUVEAU : Initialisation de l'Auth
+        const auth = firebase.auth(); 
+    
+    // Ancien : const userId = "mon_utilisateur";
+    // NOUVEAU : Le userId est géré par l'événement de connexion/déconnexion
+    let userId = null; 
+    
+    // ... le reste des variables ...
         // =========================================================
         // FIN Configuration Firebase
         // =========================================================
@@ -647,6 +678,38 @@
                     console.error("Erreur lors de la sauvegarde sur Firebase:", error);
                 });
         }
+
+        // =========================================================
+// GESTION DE L'ÉTAT DE CONNEXION
+// =========================================================
+
+function handleAuthStateChange(user) {
+    const authSection = document.getElementById('auth-section');
+    const appSection = document.getElementById('app-section');
+
+    if (user) {
+        // 1. UTILISATEUR CONNECTÉ
+        userId = user.uid; // Utilise l'UID unique de l'utilisateur comme chemin
+        authSection.style.display = 'none'; // Masquer la connexion
+        appSection.style.display = 'block'; // Afficher l'application
+
+        loadData(); // Charger les données de cet utilisateur spécifique
+        console.log("Utilisateur connecté :", user.email, "UID:", userId);
+        
+        // Initialiser l'interface de l'application
+        init(); 
+
+    } else {
+        // 2. UTILISATEUR DÉCONNECTÉ
+        userId = null;
+        authSection.style.display = 'block'; // Afficher la connexion
+        appSection.style.display = 'none'; // Masquer l'application
+        console.log("Utilisateur déconnecté.");
+    }
+}
+
+// L'écouteur Firebase qui surveille la connexion/déconnexion
+auth.onAuthStateChanged(handleAuthStateChange);
         // ------------------------------------------------------------------
 
         // Initialiser l'application
@@ -1423,6 +1486,39 @@ function resetData() {
 }
         // Démarrer l'application
         init();
+    
+    // =========================================================
+// AUTHENTIFICATION
+// =========================================================
+
+function signIn() {
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-password').value;
+    
+    auth.signInWithEmailAndPassword(email, password)
+        .catch(function(error) {
+            alert("Erreur de connexion : " + error.message);
+        });
+}
+
+function signUp() {
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-password').value;
+    
+    if (password.length < 6) {
+        alert("Le mot de passe doit contenir au moins 6 caractères.");
+        return;
+    }
+    
+    auth.createUserWithEmailAndPassword(email, password)
+        .catch(function(error) {
+            alert("Erreur d'inscription : " + error.message);
+        });
+}
+
+function signOutUser() {
+    auth.signOut();
+}
     </script>
 <div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
     <button onclick="resetData()" class="btn btn-danger">
