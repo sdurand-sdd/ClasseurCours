@@ -631,10 +631,9 @@
         // NOUVELLE FONCTION : Charger les données depuis Firebase
         // ------------------------------------------------------------------
         function loadData() {
-            // Utiliser 'once' pour lire les données une seule fois
-            return db.ref('classeurData/mon_utilisateur').once('value')
-                .then((snapshot) => {
-                    const saved = snapshot.val();
+    // DOIT UTILISER L'UID DYNAMIQUE : userId
+    return db.ref('classeurData/' + userId).once('value') // <-- CORRIGÉ
+        .then((snapshot) => {
                     
                     if (saved) {
                         try {
@@ -681,7 +680,7 @@
             const stateToSave = { ...state }; 
 
             // Utiliser 'set' pour écraser les données à ce chemin avec l'état actuel
-            db.ref('classeurData/mon_utilisateur').set(stateToSave)
+            db.ref('classeurData/' + userId).set(stateToSave)
                 .then(() => {
                     console.log("Données sauvegardées sur Firebase.");
                 })
