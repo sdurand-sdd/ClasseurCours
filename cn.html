@@ -1391,7 +1391,36 @@
             };
             reader.readAsText(file);
         }
+// =========================================================
+// FONCTION : Réinitialisation Annuelle (CORRIGÉE)
+// =========================================================
 
+function resetData() {
+    // AJOUT DE L'ALERTE DE CONFIRMATION AVANT D'AGIR
+    if (!confirm("ATTENTION : Êtes-vous sûr de vouloir réinitialiser l'année scolaire ? Cela effacera toutes les classes, notes de cours et notes hebdomadaires. Cette action est irréversible !")) {
+        // Si l'utilisateur clique sur "Annuler", on sort de la fonction
+        return;
+    }
+    
+    // Si l'utilisateur clique sur "OK", on continue
+    
+    // Réinitialisation des données spécifiques à l'année scolaire
+    state.currentClass = '';
+    state.currentPeriod = 1;
+    state.classes = [];
+    state.courses = {}; 
+    state.weekNotes = {};
+    
+    // NOTE : state.sequences n'est pas touché.
+
+    // Sauvegarde immédiate de l'état réinitialisé sur Firebase (avec le bon set())
+    saveData(); 
+    
+    // Recharger l'interface pour afficher l'état vide
+    init();
+    
+    alert("L'année scolaire a été réinitialisée. Votre catalogue de séquences est conservé.");
+}
         // Démarrer l'application
         init();
     </script>
