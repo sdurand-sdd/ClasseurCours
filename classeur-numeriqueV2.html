@@ -605,7 +605,7 @@
         </div>
     </div>
 
-   <script>
+<script>
     // État de l'application
     let state = {
         currentClass: '',
@@ -628,16 +628,13 @@
                 // Tenter de charger les données sauvegardées
                 const loadedState = JSON.parse(saved);
                 // Fusionner avec l'état par défaut pour garantir toutes les clés
-                // Attention : l'opérateur spread est préférable à l'écrasement total
                 state = { ...state, ...loadedState };
             } catch (e) {
                 console.error("Erreur lors du chargement des données. L'état par défaut sera utilisé.", e);
-                // Si la sauvegarde est corrompue, on continue avec l'état par défaut initialisé
             }
         }
         
-        // **CORRECTION DE L'ERREUR:**
-        // S'assurer que state.classes est toujours un tableau pour éviter l'erreur de 'length'
+        // CORRECTION DE L'ERREUR 1 : Assurer que state.classes est toujours un tableau
         if (!state.classes || !Array.isArray(state.classes)) {
             state.classes = [];
         }
@@ -804,17 +801,26 @@
         }
     }
 
+    // MODIFICATION DE CETTE FONCTION
     function renderCourseSlot(week, slotNum, globalNum) {
         const key = `${state.currentClass}-W${week}-C${slotNum}`;
         // Utiliser || {} pour garantir que course est un objet même s'il n'existe pas
         const course = state.courses[key] || {}; 
         
+        // NOUVEAU : Construire l'affichage de la séquence et de la séance
+        let sequenceDisplay = '';
+        if (course.sequence) {
+            sequenceDisplay = `<strong>Séquence:</strong> ${course.sequence}`;
+            if (course.sessionNum > 0) {
+                sequenceDisplay += ` (Séance ${course.sessionNum})`;
+            }
+        }
+        
         return `
             <div class="course-slot" onclick="editCourse('${key}', ${week}, ${slotNum}, ${globalNum})">
                 <h4>Cours ${globalNum}</h4>
                 ${course.date ? `<div class="course-date">📅 ${formatDate(course.date)}</div>` : '<div class="course-date">⚠️ Date non définie</div>'}
-                ${course.sequence ? `<div class="course-content"><strong>Séquence:</strong> ${course.sequence}</div>` : ''}
-                ${course.content ? `<div class="course-content">${truncate(course.content, 100)}</div>` : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'}
+                ${sequenceDisplay ? `<div class="course-content">${sequenceDisplay}</div>` : ''} ${course.content ? `<div class="course-content">${truncate(course.content, 100)}</div>` : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'}
                 ${course.homework ? `<div class="course-homework"><strong>📝 À faire:</strong> ${truncate(course.homework, 80)}</div>` : ''}
                 ${course.notes ? `<div class="course-notes"><strong>💭 Notes:</strong> ${truncate(course.notes, 80)}</div>` : ''}
             </div>
@@ -846,6 +852,7 @@
         return text.length > length ? text.substring(0, length) + '...' : text;
     }
 
+    // MODIFICATION DE CETTE FONCTION
     function editCourse(key, week, slotNum, globalNum) {
         currentEditingCourse = key;
         const course = state.courses[key] || {};
@@ -854,6 +861,10 @@
         document.getElementById('courseContent').value = course.content || '';
         document.getElementById('courseHomework').value = course.homework || '';
         document.getElementById('courseNotes').value = course.notes || '';
+        
+        // NOUVEAU : Lire le numéro de séance sauvegardé, ou 1 par défaut
+        // Utiliser course.sessionNum || 1 pour initialiser à 1 si non défini
+        document.getElementById('courseSessionNum').value = course.sessionNum || 1; 
         
         // Charger les séquences dans le select
         const select = document.getElementById('courseSequence');
@@ -877,6 +888,7 @@
         currentEditingCourse = null;
     }
 
+    // MODIFICATION DE CETTE FONCTION
     function saveCourse() {
         if (!currentEditingCourse) return;
         
@@ -898,9 +910,14 @@
         const content = document.getElementById('courseContent').value || defaultContent;
         const homework = document.getElementById('courseHomework').value || defaultHomework;
         
+        // NOUVEAU : Lire et valider le numéro de séance
+        const sessionNumInput = document.getElementById('courseSessionNum').value;
+        const sessionNum = parseInt(sessionNumInput, 10);
+        
         state.courses[currentEditingCourse] = {
             date: document.getElementById('courseDate').value,
             sequence: sequenceName,
+            sessionNum: sessionNum > 0 ? sessionNum : 1, // Sauvegarder le numéro de séance (au moins 1)
             content: content,
             homework: homework,
             notes: document.getElementById('courseNotes').value
@@ -935,7 +952,7 @@
 
     // Gestion des classes
     function openClassManager() {
-        // CORRECTION/SECURITE : S'assurer que classes est défini avant de l'utiliser
+        // CORRECTION/SECURITE 2 : S'assurer que classes est défini avant de l'utiliser
         if (!state.classes) {
             state.classes = [];
         }
