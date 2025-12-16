@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classeur Numérique</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Nouveau fond : Gris chaud / Taupe clair */
+            background: #e6e0d8; 
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #a9a9aa 0%, #222224 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            background: rgb(229, 203, 229);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .class-selector, .period-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        select, button {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        select {
+            background: #fff;
+            border: 1px solid #ccc;
+            min-width: 150px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        button:hover:not([disabled]) {
+            background: #5a6cdb;
+        }
+
+        button[disabled] {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .period-nav button {
+            width: 40px;
+            padding: 10px 5px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .week-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .week-header {
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #495057;
+        }
+
+        .week-type {
+            font-size: 0.8em;
+            background: #e9ecef;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .course-slot, .notes-slot {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 5px solid #667eea;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            min-height: 80px;
+        }
+
+        .course-slot:hover, .notes-slot:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        .course-date {
+            font-size: 0.8em;
+            color: #764ba2;
+            margin-bottom: 5px;
+            font-style: italic;
+        }
+
+        .course-content, .course-homework, .course-notes {
+            font-size: 0.9em;
+            color: #343a40;
+            margin-top: 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none;
+            overflow-y: auto;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px; /* Taille augmentée */
+            width: 95%;
+            max-height: 95vh;
+            overflow-y: auto;
+            margin: 2% auto; 
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); 
+            animation: slide-down 0.3s ease-out;
+        }
+        
+        @keyframes slide-down {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: #dc3545;
+            color: white;
+            padding: 8px 12px;
+        }
+        
+        .close-btn:hover {
+            background: #c82333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #343a40;
+        }
+
+        .form-group input[type="date"],
+        .form-group input[type="number"],
+        .form-group input[type="text"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            min-height: 120px; /* Hauteur minimale augmentée */
+            resize: vertical;
+        }
+
+        .save-btn {
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .save-btn:hover {
+            background: #218838;
+        }
+        
+        /* List Management Styles */
+        .list-management {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        
+        .class-item, .sequence-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px dotted #ccc;
+        }
+        
+        .class-item:last-child, .sequence-item:last-child {
+            border-bottom: none;
+        }
+        
+        .class-info {
+            flex-grow: 1;
+        }
+
+        .class-name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .class-pattern {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+        
+        .btn-delete {
+            background: #dc3545;
+        }
+        
+        .btn-delete:hover {
+            background: #c82333;
+        }
+        
+        .edit-btn {
+             background: #ffc107;
+             color: #333;
+        }
+        
+        .edit-btn:hover {
+             background: #e0a800;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-style: italic;
+        }
+        
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>📚 Classeur Numérique Pédagogique</h1>
+        </div>
+        
+        <div class="controls">
+            <div class="class-selector">
+                <label for="classSelect">Classe :</label>
+                <select id="classSelect"></select>
+                <button onclick="openClassManager()">Gérer les classes</button>
+                <button onclick="openSequenceManager()">Catalogue Séquences</button>
+            </div>
+            
+            <div class="period-nav">
+                <button id="prevPeriod">←</button>
+                <span id="periodInfo" style="font-weight: bold;">Période 1</span>
+                <button id="nextPeriod">→</button>
+            </div>
+            
+            <div class="export-controls">
+                <button onclick="openExportModal()">Importer/Exporter</button>
+            </div>
+        </div>
+        
+        <div class="calendar-grid" id="calendarGrid">
+            </div>
+    </div>
+    
+    <div class="modal" id="courseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Éditer le cours</h2>
+                <button class="close-btn" onclick="closeCourseModal()">Fermer</button>
+            </div>
+            <form id="courseForm">
+                
+                <div class="form-group" style="display: flex; gap: 20px; align-items: flex-end;">
+                    <div style="flex: 1;">
+                        <label>Niveau Pédagogique</label>
+                        <select id="courseLevelSelect" onchange="renderCourseSequenceSelect()">
+                            <option value="">-- Niveau --</option>
+                            </select>
+                    </div>
+                    
+                    <div style="flex: 2;">
+                        <label>Séquence (Thème)</label>
+                        <select id="courseSequenceSelect" onchange="renderCourseSessionSelect()">
+                            <option value="">-- Séquence --</option>
+                        </select>
+                    </div>
+                    
+                    <div style="flex: 2;">
+                        <label>Séance Précise</label>
+                        <select id="courseSessionSelect" onchange="applySessionContent()">
+                            <option value="">-- Séance --</option>
+                        </select>
+                    </div>
+                    
+                    <div style="flex: 1;">
+                        <label>Numéro Séance/Cours</label>
+                        <input type="number" id="courseSessionNum" min="1" value="1" style="width: 100%;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Date du cours</label>
+                    <input type="date" id="courseDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Contenu du cours</label>
+                    <textarea id="courseContent" rows="8" placeholder="Détails du cours..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Travail à faire</label>
+                    <textarea id="courseHomework" rows="4" placeholder="Devoirs, exercices..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Notes personnelles</label>
+                    <textarea id="courseNotes" rows="4" placeholder="Remarques, observations..."></textarea>
+                </div>
+                
+                <div style="text-align: right; margin-top: 15px;">
+                    <button type="submit" class="save-btn" style="width: 100%;">
+                        💾 Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal" id="notesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Notes de la semaine</h2>
+                <button class="close-btn" onclick="closeNotesModal()">Fermer</button>
+            </div>
+            <form id="notesForm">
+                <div class="form-group">
+                    <label for="weekNotes">Notes personnelles pour cette semaine :</label>
+                    <textarea id="weekNotes" rows="8"></textarea>
+                </div>
+                <button type="submit" class="save-btn">💾 Enregistrer les notes</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="classModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Gérer les Classes</h2>
+                <button class="close-btn" onclick="closeClassManager()">Fermer</button>
+            </div>
+            
+            <form onsubmit="event.preventDefault(); addClass();">
+                <h4>Ajouter une nouvelle classe</h4>
+                <div class="form-group">
+                    <label for="className">Nom de la classe (ex: 3°4)</label>
+                    <input type="text" id="className" required>
+                </div>
+               <div class="form-group">
+                    <label>Pattern de la semaine (Nombre de cours par semaine A/B)</label>
+                    <div style="display: flex; gap: 20px;">
+                        <label><input type="radio" name="weekPattern" value="3-2" checked> 3 cours Sem. A / 2 cours Sem. B</label>
+                        <label><input type="radio" name="weekPattern" value="2-3"> 2 cours Sem. A / 3 cours Sem. B</label>
+                    </div>
+                </div>
+                <button type="submit" class="save-btn">➕ Ajouter</button>
+            </form>
+            
+            <div class="list-management">
+                <h4>Liste des classes existantes</h4>
+                <div id="classList">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="sequenceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Catalogue des Séquences Pédagogiques</h2>
+                <button class="close-btn" onclick="closeSequenceManager()">Fermer</button>
+            </div>
+            
+            <div class="list-management" style="margin-top: 0;">
+                <h4>Séquences existantes</h4>
+                <div id="sequenceList" style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius: 5px; padding: 10px;">
+                    </div>
+            </div>
+            
+            <hr style="margin: 20px 0;">
+            
+            <form id="sequenceForm">
+                <h4>Ajouter/Modifier une Séquence</h4>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="sequenceLevel">Niveau de Classe</label>
+                    <select id="sequenceLevel" required>
+                        <option value="">-- Choisir un niveau --</option>
+                        <option value="6">6ème</option>
+                        <option value="5">5ème</option>
+                        <option value="4">4ème</option>
+                        <option value="3">3ème</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="sequenceName">Nom de la Séquence (Thème)</label>
+                    <input type="text" id="sequenceName" required>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <label>Séances de la Séquence</label>
+                    <button type="button" class="btn-small save-btn" style="background: #007bff;" onclick="addSessionToSequence()">
+                        + Ajouter Séance
+                    </button>
+                </div>
+
+                <div id="sequenceSessionsList" style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; max-height: 250px; overflow-y: auto; margin-bottom: 15px;">
+                    <div style="color: #999;">Aucune séance ajoutée.</div>
+                </div>
+                
+                <button type="submit" class="save-btn">💾 Enregistrer la Séquence</button>
+            </form>
+        </div>
+    </div>
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Importer / Exporter les Données</h2>
+                <button class="close-btn" onclick="closeExportModal()">Fermer</button>
+            </div>
+            
+            <div class="form-group">
+                <h4>Exporter</h4>
+                <p>Téléchargez une sauvegarde de toutes vos classes, séquences et cours.</p>
+                <button onclick="exportData()" class="save-btn" style="background: #007bff;">⬇️ Télécharger la sauvegarde (.json)</button>
+            </div>
+            
+            <hr style="margin: 20px 0;">
+            
+            <div class="form-group">
+                <h4>Importer</h4>
+                <p>Attention : L'importation écrasera toutes vos données actuelles.</p>
+                <input type="file" id="importFile" accept=".json">
+                <button onclick="importData()" class="save-btn" style="background: #ffc107; color: #333; margin-top: 10px;">⬆️ Importer le fichier</button>
+            </div>
+        </div>
+    </div>
+
+
+    
+    <script>
+        // =========================================================
+        // Configuration Firebase (Vérifiez la ligne databaseURL)
+        // =========================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4BpxaadwjKgiJH3rwOdk3WaJ9m5G9qqw",
+            authDomain: "suivi-classe-4eme.firebaseapp.com",
+            projectId: "suivi-classe-4eme",
+            storageBucket: "suivi-classe-4eme.firebasestorage.app",
+            messagingSenderId: "1088897454236",
+            appId: "1:1088897454236:web:273a6ddf50ab9c0b605d59",
+            // LIGNE CRUCIALE : L'URL corrigée
+            databaseURL: "https://suivi-classe-4eme-default-rtdb.europe-west1.firebasedatabase.app" 
+        };
+        
+        // Initialiser Firebase si ce n'est pas déjà fait
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+        // =========================================================
+        // FIN Configuration Firebase
+        // =========================================================
+        
+        // État de l'application
+        // ... le reste de votre état actuel ...
+        // État de l'application
+        let state = {
+            currentClass: '',
+            currentPeriod: 1,
+            classes: [],
+            courses: {},
+            weekNotes: {},
+            // state.sequences stocke maintenant les séquences par NIVEAU, pour le catalogue centralisé
+            sequences: {} // Exemple: { '3': [seq1, seq2], '4': [seq3] }
+        };
+
+        let currentEditingCourse = null; // Key du cours actuel en édition
+        let currentEditingWeek = null;
+        
+        // Variables pour la gestion des séquences
+        let currentEditingSequenceIndex = null; // Index de la séquence en cours d'édition
+        let currentEditingLevel = null; // Niveau de la séquence en cours d'édition
+        let tempSessions = []; // Structure temporaire pour l'édition d'une nouvelle séquence/séance
+
+
+        // Charger les données depuis le stockage
+      // ------------------------------------------------------------------
+        // NOUVELLE FONCTION : Charger les données depuis Firebase
+        // ------------------------------------------------------------------
+        function loadData() {
+            // Utiliser 'once' pour lire les données une seule fois
+            return db.ref('classeurData/mon_utilisateur').once('value')
+                .then((snapshot) => {
+                    const saved = snapshot.val();
+                    
+                    if (saved) {
+                        try {
+                            // Fusionner les données chargées avec l'état par défaut
+                            const loadedState = saved;
+                            state = { ...state, ...loadedState };
+                        } catch (e) {
+                            console.error("Erreur lors du chargement des données Firebase. L'état par défaut sera utilisé.", e);
+                        }
+                    }
+                    
+                    // Code d'initialisation par défaut (si la base est vide)
+                    if (!state.classes || !Array.isArray(state.classes) || state.classes.length === 0) {
+                        state.classes = [
+                            { id: '3-3', name: '3°3', pattern: '3-2' },
+                            { id: '4-1', name: '4°1', pattern: '3-2' },
+                            { id: '5-1', name: '5°1', pattern: '3-2' },
+                            { id: '6-1', name: '6°1', pattern: '3-2' }
+                        ];
+                        state.currentClass = state.classes[0].id;
+                        // Sauvegarder immédiatement les données par défaut dans Firebase
+                        saveData(); 
+                    }
+
+                    if (!state.currentClass && state.classes.length > 0) {
+                        state.currentClass = state.classes[0].id;
+                    }
+                    
+                    if (!state.sequences || typeof state.sequences !== 'object') {
+                         state.sequences = {};
+                    }
+                    
+                    // IMPORTANT : Rendre l'initialisation asynchrone pour init
+                    return true; 
+                });
+        }
+        // ------------------------------------------------------------------
+
+        // ------------------------------------------------------------------
+        // NOUVELLE FONCTION : Sauvegarder les données dans Firebase
+        // ------------------------------------------------------------------
+        function saveData() {
+            // Supprimer les variables temporaires de l'état si elles existent
+            const stateToSave = { ...state }; 
+
+            // Utiliser 'set' pour écraser les données à ce chemin avec l'état actuel
+            db.ref('classeurData/mon_utilisateur').set(stateToSave)
+                .then(() => {
+                    console.log("Données sauvegardées sur Firebase.");
+                })
+                .catch((error) => {
+                    console.error("Erreur lors de la sauvegarde sur Firebase:", error);
+                });
+        }
+        // ------------------------------------------------------------------
+
+        // Initialiser l'application
+      // ------------------------------------------------------------------
+        // NOUVELLE FONCTION : Initialiser l'application
+        // ------------------------------------------------------------------
+        async function init() {
+            await loadData(); // <-- Attendre que les données Firebase soient chargées
+            
+            // Tout ce qui suit est exécuté APRÈS le chargement de Firebase
+            updateClassSelect();
+            updatePeriodInfo();
+            renderCalendar();
+            updateNavigationButtons();
+
+            // Event listeners
+            document.getElementById('classSelect').addEventListener('change', (e) => {
+                state.currentClass = e.target.value;
+                state.currentPeriod = 1;
+                renderCalendar();
+                updateNavigationButtons();
+                updatePeriodInfo();
+                saveData();
+            });
+
+            document.getElementById('prevPeriod').addEventListener('click', () => {
+                if (state.currentPeriod > 1) {
+                    state.currentPeriod--;
+                    renderCalendar();
+                    updateNavigationButtons();
+                    updatePeriodInfo();
+                    saveData();
+                }
+            });
+
+            document.getElementById('nextPeriod').addEventListener('click', () => {
+                if (state.currentPeriod < 9) {
+                    state.currentPeriod++;
+                    renderCalendar();
+                    updateNavigationButtons();
+                    updatePeriodInfo();
+                    saveData();
+                }
+            });
+
+            document.getElementById('courseForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveCourse();
+            });
+
+            document.getElementById('notesForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveWeekNotes();
+            });
+            
+            const sequenceForm = document.getElementById('sequenceForm');
+            if (sequenceForm) {
+                sequenceForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    addSequence();
+                });
+            }
+        }
+        // ------------------------------------------------------------------
+            
+            // Listener pour le formulaire de séquence
+            const sequenceForm = document.getElementById('sequenceForm');
+            if (sequenceForm) {
+                sequenceForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    addSequence();
+                });
+            }
+        
+
+        function updateClassSelect() {
+            const select = document.getElementById('classSelect');
+            select.innerHTML = state.classes.map(c => 
+                `<option value="${c.id}">${c.name}</option>`
+            ).join('');
+            select.value = state.currentClass;
+        }
+
+        function getCurrentClass() {
+            return state.classes.find(c => c.id === state.currentClass);
+        }
+
+        function updatePeriodInfo() {
+            document.getElementById('periodInfo').textContent = `Période ${state.currentPeriod}`;
+        }
+
+        function updateNavigationButtons() {
+            document.getElementById('prevPeriod').disabled = state.currentPeriod === 1;
+            document.getElementById('nextPeriod').disabled = state.currentPeriod === 9;
+        }
+
+        function getWeekPattern(weekNumber) {
+            const currentClass = getCurrentClass();
+            if (!currentClass) return { type: 'A', courses: 3 }; 
+            
+            const isWeekA = weekNumber % 2 === 1;
+            
+            const parts = currentClass.pattern ? currentClass.pattern.split('-') : ['3', '2'];
+            const [coursesA, coursesB] = parts.map(Number);
+            
+            return {
+                type: isWeekA ? 'A' : 'B',
+                courses: isWeekA ? coursesA : coursesB
+            };
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            if (state.classes.length === 0) {
+                grid.innerHTML = '<div class="empty-state">Veuillez d\'abord ajouter une classe via le bouton "Gérer les classes".</div>';
+                return;
+            }
+
+            const startWeek = (state.currentPeriod - 1) * 4 + 1;
+            
+            for (let week = 0; week < 4; week++) {
+                const weekNumber = startWeek + week;
+                const weekCard = document.createElement('div');
+                weekCard.className = 'week-card';
+                
+                const pattern = getWeekPattern(weekNumber);
+                
+                let coursesHTML = '';
+                
+                let globalCourseNum = 0;
+                for (let w = 1; w < weekNumber; w++) {
+                    globalCourseNum += getWeekPattern(w).courses;
+                }
+                
+                for (let i = 0; i < pattern.courses; i++) {
+                    globalCourseNum++;
+                    coursesHTML += renderCourseSlot(weekNumber, i + 1, globalCourseNum);
+                }
+                
+                if (pattern.courses < 3) {
+                    coursesHTML += renderNotesSlot(weekNumber);
+                }
+                
+                weekCard.innerHTML = `
+                    <div class="week-header">
+                        <span>Semaine ${weekNumber}</span>
+                        <span class="week-type">Semaine ${pattern.type} (${pattern.courses} cours)</span>
+                    </div>
+                    ${coursesHTML}
+                `;
+                
+                grid.appendChild(weekCard);
+            }
+        }
+
+        function renderCourseSlot(week, slotNum, globalNum) {
+            const key = `${state.currentClass}-W${week}-C${slotNum}`;
+            const course = state.courses[key] || {}; 
+            
+            let sequenceDisplay = '';
+            if (course.sequence) {
+                sequenceDisplay = `<strong>Séquence:</strong> ${course.sequence}`;
+                if (course.sessionNum > 0) {
+                    sequenceDisplay += ` (Séance ${course.sessionNum})`;
+                }
+            }
+            
+            return `
+                <div class="course-slot" onclick="editCourse('${key}', ${week}, ${slotNum}, ${globalNum})">
+                    <h4>Cours ${globalNum}</h4>
+                    ${course.date ? `<div class="course-date">📅 ${formatDate(course.date)}</div>` : '<div class="course-date">⚠️ Date non définie</div>'}
+                    ${sequenceDisplay ? `<div class="course-content">${sequenceDisplay}</div>` : ''} 
+                    ${course.content ? `<div class="course-content">${truncate(course.content, 100)}</div>` : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'}
+                    ${course.homework ? `<div class="course-homework"><strong>📝 À faire:</strong> ${truncate(course.homework, 80)}</div>` : ''}
+                    ${course.notes ? `<div class="course-notes"><strong>💭 Notes:</strong> ${truncate(course.notes, 80)}</div>` : ''}
+                </div>
+            `;
+        }
+
+        function renderNotesSlot(week) {
+            const key = `${state.currentClass}-W${week}-NOTES`;
+            const notes = state.weekNotes[key] || '';
+            
+            return `
+                <div class="notes-slot" onclick="editWeekNotes('${key}', ${week})">
+                    <h4>📝 Notes de la semaine</h4>
+                    ${notes ? `<div class="course-content">${truncate(notes, 150)}</div>` : '<div class="course-content" style="color: #999;">Cliquez pour ajouter des notes</div>'}
+                </div>
+            `;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            // Corriger le décalage de date lors de l'affichage
+            date.setDate(date.getDate() + 1); 
+            return date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function truncate(text, length) {
+            if (!text) return '';
+            return text.length > length ? text.substring(0, length) + '...' : text;
+        }
+
+        // =========================================================
+        // NOUVELLES FONCTIONS DE SÉLECTION EN CASCADE
+        // =========================================================
+        
+        function renderCourseLevelSelect(selectedLevel = '') {
+            const select = document.getElementById('courseLevelSelect');
+            select.innerHTML = '<option value="">-- Niveau --</option>';
+            const levels = ['6', '5', '4', '3', 'Autre']; 
+
+            levels.forEach(level => {
+                const option = document.createElement('option');
+                option.value = level;
+                option.textContent = `Niveau ${level}`;
+                if (level === selectedLevel) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        }
+        
+        function renderCourseSequenceSelect(selectedSequenceName = '') {
+            const level = document.getElementById('courseLevelSelect').value;
+            const select = document.getElementById('courseSequenceSelect');
+            select.innerHTML = '<option value="">-- Séquence --</option>';
+            
+            const sessionSelect = document.getElementById('courseSessionSelect');
+            sessionSelect.innerHTML = '<option value="">-- Séance --</option>';
+            
+            if (!level) return;
+
+            const sequences = state.sequences[level] || [];
+            
+            sequences.forEach((seq, idx) => {
+                const option = document.createElement('option');
+                option.value = idx; 
+                option.textContent = seq.name;
+                if (seq.name === selectedSequenceName) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+            
+            if (selectedSequenceName) {
+                renderCourseSessionSelect(null); 
+            }
+        }
+        
+        function renderCourseSessionSelect(selectedSessionNum = null) {
+            const level = document.getElementById('courseLevelSelect').value;
+            const sequenceIdx = document.getElementById('courseSequenceSelect').value;
+            const select = document.getElementById('courseSessionSelect');
+            select.innerHTML = '<option value="">-- Séance --</option>';
+
+            if (!level || sequenceIdx === '') return;
+
+            const sequence = state.sequences[level][sequenceIdx];
+            if (!sequence || !sequence.sessions) return;
+            
+            sequence.sessions.forEach(session => {
+                const option = document.createElement('option');
+                option.value = session.sessionNum; 
+                option.textContent = `Séance ${session.sessionNum}: ${session.name}`;
+                if (session.sessionNum == selectedSessionNum) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        }
+        
+        function applySessionContent() {
+            const level = document.getElementById('courseLevelSelect').value;
+            const sequenceIdx = document.getElementById('courseSequenceSelect').value;
+            const sessionNum = document.getElementById('courseSessionSelect').value;
+
+            if (!level || sequenceIdx === '' || !sessionNum) return;
+            
+            const sequence = state.sequences[level][sequenceIdx];
+            const session = sequence.sessions.find(s => s.sessionNum == sessionNum);
+            
+            if (session) {
+                // Pré-remplir les champs
+                document.getElementById('courseContent').value = session.content;
+                document.getElementById('courseHomework').value = session.homework;
+                document.getElementById('courseSessionNum').value = session.sessionNum;
+            }
+        }
+        
+        // =========================================================
+        // FONCTIONS D'ÉDITION ET DE SAUVEGARDE DE COURS
+        // =========================================================
+
+        function editCourse(key, week, slotNum, globalNum) {
+            currentEditingCourse = key;
+            const course = state.courses[key] || {};
+            
+            document.getElementById('courseDate').value = course.date || '';
+            document.getElementById('courseNotes').value = course.notes || '';
+            
+            // Si le cours a déjà des valeurs sauvegardées, les utiliser
+            document.getElementById('courseContent').value = course.content || '';
+            document.getElementById('courseHomework').value = course.homework || '';
+            document.getElementById('courseSessionNum').value = course.sessionNum || 1;
+            
+            // 1. Déterminer le Niveau actuel de la classe 
+            const currentClassId = state.currentClass;
+            const currentLevel = currentClassId.split('-')[0]; // Ex: '3-3' -> '3'
+
+            // 2. Initialiser la sélection de Niveau
+            renderCourseLevelSelect(currentLevel);
+            
+            // 3. Initialiser les sélections de Séquence et Séance si elles sont déjà dans le cours
+            if (course.sequence) {
+                // Trouver l'index de la séquence sauvegardée
+                const sequenceArray = state.sequences[currentLevel] || [];
+                const sequence = sequenceArray.find(s => s.name === course.sequence);
+                
+                if (sequence) {
+                    const sequenceIdx = sequenceArray.indexOf(sequence);
+                    
+                    // On simule une sélection pour pré-remplir les autres listes
+                    document.getElementById('courseLevelSelect').value = currentLevel;
+                    renderCourseSequenceSelect(course.sequence); 
+                    document.getElementById('courseSequenceSelect').value = sequenceIdx; 
+                    
+                    // Sélectionne la séance
+                    renderCourseSessionSelect(course.sessionNum);
+                }
+            } else {
+                // Si aucune séquence n'est sauvegardée, initialiser la liste des séquences du niveau
+                renderCourseSequenceSelect(); 
+            }
+            
+            document.getElementById('courseModal').classList.add('active');
+        }
+
+        function closeCourseModal() {
+            document.getElementById('courseModal').classList.remove('active');
+            currentEditingCourse = null;
+        }
+
+        function saveCourse() {
+            if (!currentEditingCourse) return;
+            
+            const sequenceIdx = document.getElementById('courseSequenceSelect').value;
+            const level = document.getElementById('courseLevelSelect').value;
+            
+            let sequenceName = '';
+            
+            // Trouver le nom de la séquence
+            if (level && sequenceIdx !== '') {
+                const sequences = state.sequences[level] || [];
+                const sequence = sequences[sequenceIdx];
+                if (sequence) {
+                    sequenceName = sequence.name;
+                }
+            }
+            
+            // CORRECTION DU BUG D'ÉCRASEMENT: On prend la valeur exacte du champ (qui peut être "")
+            const content = document.getElementById('courseContent').value;
+            const homework = document.getElementById('courseHomework').value;
+            
+            // Récupération du numéro de séance/cours
+            const sessionNumInput = document.getElementById('courseSessionNum');
+            const sessionNum = sessionNumInput ? parseInt(sessionNumInput.value, 10) : 1;
+            
+            state.courses[currentEditingCourse] = {
+                date: document.getElementById('courseDate').value,
+                // On sauvegarde seulement le nom de la séquence et le numéro de séance
+                sequence: sequenceName, 
+                sessionNum: sessionNum > 0 ? sessionNum : 1, 
+                content: content, 
+                homework: homework, 
+                notes: document.getElementById('courseNotes').value
+            };
+            
+            saveData();
+            renderCalendar();
+            closeCourseModal();
+        }
+
+        function editWeekNotes(key, week) {
+            currentEditingWeek = key;
+            const notes = state.weekNotes[key] || '';
+            document.getElementById('weekNotes').value = notes;
+            document.getElementById('notesModal').classList.add('active');
+        }
+
+        function closeNotesModal() {
+            document.getElementById('notesModal').classList.remove('active');
+            currentEditingWeek = null;
+        }
+
+        function saveWeekNotes() {
+            if (!currentEditingWeek) return;
+            
+            state.weekNotes[currentEditingWeek] = document.getElementById('weekNotes').value;
+            
+            saveData();
+            renderCalendar();
+            closeNotesModal();
+        }
+        
+        // =========================================================
+        // NOUVELLES FONCTIONS DE GESTION DES SÉQUENCES CENTRALISÉES
+        // =========================================================
+
+        function openSequenceManager() {
+            // Afficher la liste de tous les niveaux et séquences
+            renderSequenceLevelList(); 
+            // Réinitialiser le formulaire d'ajout
+            closeSequenceManager(false); // On ne ferme que la modale si 'false' est passé
+            document.getElementById('sequenceModal').classList.add('active');
+        }
+
+        function closeSequenceManager(closeModal = true) {
+            if (closeModal) {
+                 document.getElementById('sequenceModal').classList.remove('active');
+            }
+            
+            // Réinitialiser les champs de saisie
+            document.getElementById('sequenceName').value = '';
+            document.getElementById('sequenceLevel').value = '';
+            
+            // Réinitialiser les variables d'état temporaires
+            tempSessions = [];
+            currentEditingSequenceIndex = null;
+            currentEditingLevel = null;
+            renderSequenceSessions(); // Vider l'affichage des sessions
+        }
+        
+        function renderSequenceLevelList() {
+            const list = document.getElementById('sequenceList'); 
+            if (!list) return;
+
+            list.innerHTML = '';
+            let totalSequences = 0;
+            const levels = ['6', '5', '4', '3', 'Autre']; 
+
+            levels.forEach(level => {
+                const sequences = state.sequences[level] || [];
+                
+                if (sequences.length > 0) {
+                    list.innerHTML += `<h4 style="margin-top: 15px; color: #667eea;">Niveau ${level} (${sequences.length} séquences)</h4>`;
+                    sequences.forEach((seq, idx) => {
+                        totalSequences++;
+                        list.innerHTML += `
+                            <div class="sequence-item">
+                                <div>
+                                    <strong>${seq.name}</strong>
+                                    <div style="font-size: 0.9em; color: #6c757d; margin-top: 5px;">${seq.sessions.length} séances définies</div>
+                                </div>
+                                <div class="sequence-actions">
+                                    <button class="btn-small edit-btn" onclick="editSequence('${level}', ${idx})">✏️</button>
+                                    <button class="btn-small btn-delete" onclick="deleteSequence('${level}', ${idx})">🗑️</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            });
+
+            if (totalSequences === 0) {
+                 list.innerHTML = '<div class="empty-state">Aucune séquence définie dans le catalogue.</div>';
+            }
+        }
+
+        function addSessionToSequence() {
+            const num = tempSessions.length + 1;
+            const sessionName = prompt(`Nom de la Séance ${num} (ex: Introduction, Activité 1, Évaluation)`);
+            if (!sessionName) return; 
+
+            const content = prompt(`Contenu par défaut pour la Séance ${num} :`);
+            const homework = prompt(`Devoir par défaut pour la Séance ${num} :`);
+            
+            tempSessions.push({
+                sessionNum: num,
+                name: sessionName,
+                content: content || '',
+                homework: homework || ''
+            });
+            
+            renderSequenceSessions();
+        }
+
+        function renderSequenceSessions() {
+            const list = document.getElementById('sequenceSessionsList');
+            if (!list) return;
+
+            if (tempSessions.length === 0) {
+                list.innerHTML = '<div style="color: #999;">Aucune séance ajoutée.</div>';
+                return;
+            }
+
+            list.innerHTML = tempSessions.map((session, index) => `
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dotted #eee;">
+                    <span><strong>Séance ${session.sessionNum}:</strong> ${session.name}</span>
+                    <button type="button" class="btn-small btn-delete" style="padding: 2px 5px; margin-left: 10px;" onclick="deleteSession(${index})">X</button>
+                </div>
+            `).join('');
+        }
+
+        function deleteSession(index) {
+            if (confirm("Supprimer cette séance ?")) {
+                tempSessions.splice(index, 1);
+                // Réajuster les numéros après suppression
+                tempSessions.forEach((s, i) => s.sessionNum = i + 1);
+                renderSequenceSessions();
+            }
+        }
+        
+        function addSequence() {
+            
+            const name = document.getElementById('sequenceName').value.trim();
+            const level = document.getElementById('sequenceLevel').value;
+
+            if (!name || !level) {
+                alert('Veuillez entrer un nom et choisir un niveau pour la séquence.');
+                return;
+            }
+
+            if (tempSessions.length === 0) {
+                if (!confirm("Attention : Vous n'avez ajouté aucune séance à cette séquence. Continuer sans séance ?")) {
+                    // Si l'utilisateur annule, on sort de la fonction
+                    return;
+                }
+            }
+
+            // Assurer que l'objet state.sequences[level] existe
+            if (!state.sequences[level]) {
+                state.sequences[level] = [];
+            }
+            
+            const newSequence = {
+                name: name,
+                level: level,
+                sessions: tempSessions 
+            };
+            
+            // Logique de modification ou d'ajout
+            if (currentEditingSequenceIndex !== null && currentEditingLevel === level) {
+                // Modification (si le niveau n'a pas changé)
+                state.sequences[level][currentEditingSequenceIndex] = newSequence;
+            } else {
+                 // Si le niveau a changé OU c'est un ajout
+                 
+                 // 1. Si on était en mode édition (index non null), supprimer l'ancienne séquence
+                 if (currentEditingSequenceIndex !== null && currentEditingLevel) {
+                     state.sequences[currentEditingLevel].splice(currentEditingSequenceIndex, 1);
+                 }
+                 
+                 // 2. Ajouter la nouvelle
+                 state.sequences[level].push(newSequence);
+            }
+            
+            saveData();
+            // Réinitialiser et rafraîchir l'affichage
+            closeSequenceManager(false); // Réinitialise les variables mais ne ferme pas la modale
+            renderSequenceLevelList(); // Rafraîchit la liste des séquences
+            
+            alert(`Séquence "${name}" sauvegardée pour le niveau ${level}.`);
+        }
+        
+        function editSequence(level, index) {
+            const sequence = state.sequences[level][index];
+            if (!sequence) return;
+            
+            // Fermer/réinitialiser l'état actuel pour passer en mode édition
+            closeSequenceManager(false); 
+
+            currentEditingSequenceIndex = index;
+            currentEditingLevel = level;
+            
+            document.getElementById('sequenceName').value = sequence.name;
+            document.getElementById('sequenceLevel').value = sequence.level;
+            
+            // Cloner les sessions dans le tableau temporaire pour l'édition
+            tempSessions = JSON.parse(JSON.stringify(sequence.sessions)); 
+            
+            renderSequenceSessions();
+        }
+        
+        function deleteSequence(level, index) {
+            if (confirm(`Êtes-vous sûr de vouloir supprimer la séquence "${state.sequences[level][index].name}" pour le niveau ${level} ?`)) {
+                state.sequences[level].splice(index, 1);
+                saveData();
+                renderSequenceLevelList();
+            }
+        }
+
+
+        // =========================================================
+        // Gestion des classes
+        // =========================================================
+        
+        function openClassManager() {
+            if (!state.classes) {
+                state.classes = [];
+            }
+            renderClassList();
+            document.getElementById('classModal').classList.add('active');
+        }
+
+        function closeClassManager() {
+            document.getElementById('classModal').classList.remove('active');
+            document.getElementById('className').value = '';
+        }
+
+        function addClass() {
+            const name = document.getElementById('className').value.trim();
+            if (!name) {
+                alert('Veuillez entrer un nom de classe');
+                return;
+            }
+            
+            const pattern = document.querySelector('input[name="weekPattern"]:checked').value;
+            // Création d'un ID robuste (ex: '3-3' ou '4-1')
+            const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            
+            if (state.classes.find(c => c.id === id)) {
+                alert('Cette classe existe déjà');
+                return;
+            }
+            
+            state.classes.push({
+                id: id,
+                name: name,
+                pattern: pattern
+            });
+            
+            if (!state.currentClass) {
+                state.currentClass = id;
+            }
+            
+            saveData();
+            updateClassSelect();
+            renderClassList();
+            
+            document.getElementById('className').value = '';
+        }
+
+        function renderClassList() {
+            const list = document.getElementById('classList');
+            
+            if (!state.classes || state.classes.length === 0) {
+                list.innerHTML = '<div class="empty-state">Aucune classe définie</div>';
+                return;
+            }
+            
+            list.innerHTML = state.classes.map((cls, idx) => {
+                const [coursesA, coursesB] = cls.pattern.split('-');
+                return `
+                    <div class="class-item">
+                        <div class="class-info">
+                            <div class="class-name">${cls.name}</div>
+                            <div class="class-pattern">Semaine A: ${coursesA} cours | Semaine B: ${coursesB} cours</div>
+                        </div>
+                        <div class="sequence-actions">
+                            <button class="btn-small btn-delete" onclick="deleteClass(${idx})">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteClass(idx) {
+            if (state.classes.length === 1) {
+                alert('Vous devez avoir au moins une classe');
+                return;
+            }
+            
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette classe ? Toutes les données associées seront perdues.')) {
+                const deletedId = state.classes[idx].id;
+                state.classes.splice(idx, 1);
+                
+                if (state.currentClass === deletedId) {
+                    state.currentClass = state.classes.length > 0 ? state.classes[0].id : '';
+                }
+                
+                saveData();
+                updateClassSelect();
+                renderClassList();
+                renderCalendar();
+            }
+        }
+        
+        // =========================================================
+        // Export/Import
+        // =========================================================
+        
+        function openExportModal() {
+            document.getElementById('exportModal').classList.add('active');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('active');
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(state, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `classeur-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            const file = document.getElementById('importFile').files[0];
+            if (!file) {
+                alert('Veuillez sélectionner un fichier');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (confirm('Cette action remplacera toutes vos données actuelles. Continuer ?')) {
+                        // Vérification de base de la structure des données
+                        if (imported.classes && Array.isArray(imported.classes)) {
+                            state = imported;
+                            saveData();
+                            updateClassSelect();
+                            renderCalendar();
+                            closeExportModal();
+                            alert('Données importées avec succès !');
+                        } else {
+                            alert('Erreur lors de l\'import : Le fichier ne semble pas être un fichier de données valide.');
+                        }
+                    }
+                } catch (error) {
+                    alert('Erreur lors de l\'import : Fichier invalide ou corrompu.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Démarrer l'application
+        init();
+    </script>
+</body>
+</html>
