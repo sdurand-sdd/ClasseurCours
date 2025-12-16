@@ -605,507 +605,545 @@
         </div>
     </div>
 
-    <script>
-        // État de l'application
-        let state = {
-            currentClass: '',
-            currentPeriod: 1,
-            classes: [],
-            courses: {},
-            weekNotes: {},
-            sequences: {}
-        };
+   <script>
+    // État de l'application
+    let state = {
+        currentClass: '',
+        currentPeriod: 1,
+        classes: [], // Initialisation en tant que tableau vide
+        courses: {},
+        weekNotes: {},
+        sequences: {}
+    };
 
-        let currentEditingCourse = null;
-        let currentEditingWeek = null;
+    let currentEditingCourse = null;
+    let currentEditingWeek = null;
 
-        // Charger les données depuis le stockage
-        function loadData() {
-            const saved = localStorage.getItem('classeurData');
-            if (saved) {
-                state = JSON.parse(saved);
-            }
-            
-            // Si aucune classe n'existe, créer des classes par défaut
-            if (state.classes.length === 0) {
-                state.classes = [
-                    { id: '3-3', name: '3°3', pattern: '3-2' },
-                    { id: '3-4', name: '3°4', pattern: '3-2' },
-                    { id: '4-1', name: '4°1', pattern: '3-2' },
-                    { id: '4-2', name: '4°2', pattern: '3-2' },
-                    { id: '5-1', name: '5°1', pattern: '3-2' },
-                    { id: '5-2', name: '5°2', pattern: '3-2' },
-                    { id: '6-1', name: '6°1', pattern: '3-2' }
-                ];
-                state.currentClass = state.classes[0].id;
+    // Charger les données depuis le stockage
+    function loadData() {
+        const saved = localStorage.getItem('classeurData');
+        
+        if (saved) {
+            try {
+                // Tenter de charger les données sauvegardées
+                const loadedState = JSON.parse(saved);
+                // Fusionner avec l'état par défaut pour garantir toutes les clés
+                // Attention : l'opérateur spread est préférable à l'écrasement total
+                state = { ...state, ...loadedState };
+            } catch (e) {
+                console.error("Erreur lors du chargement des données. L'état par défaut sera utilisé.", e);
+                // Si la sauvegarde est corrompue, on continue avec l'état par défaut initialisé
             }
         }
-
-        // Sauvegarder les données
-        function saveData() {
-            localStorage.setItem('classeurData', JSON.stringify(state));
+        
+        // **CORRECTION DE L'ERREUR:**
+        // S'assurer que state.classes est toujours un tableau pour éviter l'erreur de 'length'
+        if (!state.classes || !Array.isArray(state.classes)) {
+            state.classes = [];
         }
 
-        // Initialiser l'application
-        function init() {
-            loadData();
-            updateClassSelect();
-            updatePeriodInfo();
+        // Si aucune classe n'existe, créer des classes par défaut
+        if (state.classes.length === 0) {
+            state.classes = [
+                { id: '3-3', name: '3°3', pattern: '3-2' },
+                { id: '3-4', name: '3°4', pattern: '3-2' },
+                { id: '4-1', name: '4°1', pattern: '3-2' },
+                { id: '4-2', name: '4°2', pattern: '3-2' },
+                { id: '5-1', name: '5°1', pattern: '3-2' },
+                { id: '5-2', name: '5°2', pattern: '3-2' },
+                { id: '6-1', name: '6°1', pattern: '3-2' }
+            ];
+            // Définir la classe courante si on vient de créer les classes par défaut
+            state.currentClass = state.classes[0].id;
+        }
+
+        // S'assurer qu'une classe courante est définie si des classes existent mais pas de currentClass
+        if (!state.currentClass && state.classes.length > 0) {
+            state.currentClass = state.classes[0].id;
+        }
+    }
+
+    // Sauvegarder les données
+    function saveData() {
+        localStorage.setItem('classeurData', JSON.stringify(state));
+    }
+
+    // Initialiser l'application
+    function init() {
+        loadData();
+        updateClassSelect();
+        updatePeriodInfo();
+        renderCalendar();
+        updateNavigationButtons();
+
+        // Event listeners
+        document.getElementById('classSelect').addEventListener('change', (e) => {
+            state.currentClass = e.target.value;
+            state.currentPeriod = 1;
             renderCalendar();
             updateNavigationButtons();
+            updatePeriodInfo();
+            saveData();
+        });
 
-            // Event listeners
-            document.getElementById('classSelect').addEventListener('change', (e) => {
-                state.currentClass = e.target.value;
-                state.currentPeriod = 1;
+        document.getElementById('prevPeriod').addEventListener('click', () => {
+            if (state.currentPeriod > 1) {
+                state.currentPeriod--;
                 renderCalendar();
                 updateNavigationButtons();
                 updatePeriodInfo();
                 saveData();
-            });
-
-            document.getElementById('prevPeriod').addEventListener('click', () => {
-                if (state.currentPeriod > 1) {
-                    state.currentPeriod--;
-                    renderCalendar();
-                    updateNavigationButtons();
-                    updatePeriodInfo();
-                    saveData();
-                }
-            });
-
-            document.getElementById('nextPeriod').addEventListener('click', () => {
-                if (state.currentPeriod < 9) {
-                    state.currentPeriod++;
-                    renderCalendar();
-                    updateNavigationButtons();
-                    updatePeriodInfo();
-                    saveData();
-                }
-            });
-
-            document.getElementById('courseForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                saveCourse();
-            });
-
-            document.getElementById('notesForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                saveWeekNotes();
-            });
-        }
-
-        function updateClassSelect() {
-            const select = document.getElementById('classSelect');
-            select.innerHTML = state.classes.map(c => 
-                `<option value="${c.id}">${c.name}</option>`
-            ).join('');
-            select.value = state.currentClass;
-        }
-
-        function getCurrentClass() {
-            return state.classes.find(c => c.id === state.currentClass);
-        }
-
-        function updatePeriodInfo() {
-            document.getElementById('periodInfo').textContent = `Période ${state.currentPeriod}`;
-        }
-
-        function updateNavigationButtons() {
-            document.getElementById('prevPeriod').disabled = state.currentPeriod === 1;
-            document.getElementById('nextPeriod').disabled = state.currentPeriod === 9;
-        }
-
-        function getWeekPattern(weekNumber) {
-            const currentClass = getCurrentClass();
-            if (!currentClass) return '3-2';
-            
-            // Semaine paire = B, Semaine impaire = A
-            const isWeekA = weekNumber % 2 === 1;
-            const [coursesA, coursesB] = currentClass.pattern.split('-').map(Number);
-            
-            return {
-                type: isWeekA ? 'A' : 'B',
-                courses: isWeekA ? coursesA : coursesB
-            };
-        }
-
-        function renderCalendar() {
-            const grid = document.getElementById('calendarGrid');
-            grid.innerHTML = '';
-
-            const startWeek = (state.currentPeriod - 1) * 4 + 1;
-            
-            for (let week = 0; week < 4; week++) {
-                const weekNumber = startWeek + week;
-                const weekCard = document.createElement('div');
-                weekCard.className = 'week-card';
-                
-                const pattern = getWeekPattern(weekNumber);
-                
-                let coursesHTML = '';
-                let courseCounter = 1;
-                
-                // Calculer le numéro de cours global
-                let globalCourseNum = 0;
-                for (let w = 1; w < weekNumber; w++) {
-                    globalCourseNum += getWeekPattern(w).courses;
-                }
-                
-                for (let i = 0; i < pattern.courses; i++) {
-                    globalCourseNum++;
-                    coursesHTML += renderCourseSlot(weekNumber, i + 1, globalCourseNum);
-                }
-                
-                // Si c'est une semaine avec moins de 3 cours, ajouter une case notes
-                if (pattern.courses < 3) {
-                    coursesHTML += renderNotesSlot(weekNumber);
-                }
-                
-                weekCard.innerHTML = `
-                    <div class="week-header">
-                        <span>Semaine ${weekNumber}</span>
-                        <span class="week-type">Semaine ${pattern.type} (${pattern.courses} cours)</span>
-                    </div>
-                    ${coursesHTML}
-                `;
-                
-                grid.appendChild(weekCard);
             }
+        });
+
+        document.getElementById('nextPeriod').addEventListener('click', () => {
+            if (state.currentPeriod < 9) {
+                state.currentPeriod++;
+                renderCalendar();
+                updateNavigationButtons();
+                updatePeriodInfo();
+                saveData();
+            }
+        });
+
+        document.getElementById('courseForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveCourse();
+        });
+
+        document.getElementById('notesForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveWeekNotes();
+        });
+    }
+
+    function updateClassSelect() {
+        const select = document.getElementById('classSelect');
+        select.innerHTML = state.classes.map(c => 
+            `<option value="${c.id}">${c.name}</option>`
+        ).join('');
+        select.value = state.currentClass;
+    }
+
+    function getCurrentClass() {
+        return state.classes.find(c => c.id === state.currentClass);
+    }
+
+    function updatePeriodInfo() {
+        document.getElementById('periodInfo').textContent = `Période ${state.currentPeriod}`;
+    }
+
+    function updateNavigationButtons() {
+        document.getElementById('prevPeriod').disabled = state.currentPeriod === 1;
+        document.getElementById('nextPeriod').disabled = state.currentPeriod === 9;
+    }
+
+    function getWeekPattern(weekNumber) {
+        const currentClass = getCurrentClass();
+        if (!currentClass) return { type: 'A', courses: 3 }; // Retour par défaut sécurisé
+        
+        // Semaine paire = B, Semaine impaire = A
+        const isWeekA = weekNumber % 2 === 1;
+        
+        // Sécurité supplémentaire si le pattern est mal formé
+        const parts = currentClass.pattern ? currentClass.pattern.split('-') : ['3', '2'];
+        const [coursesA, coursesB] = parts.map(Number);
+        
+        return {
+            type: isWeekA ? 'A' : 'B',
+            courses: isWeekA ? coursesA : coursesB
+        };
+    }
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendarGrid');
+        grid.innerHTML = '';
+        
+        // S'assurer qu'il y a des classes à afficher
+        if (state.classes.length === 0) {
+            grid.innerHTML = '<div class="empty-state">Veuillez d\'abord ajouter une classe via le bouton "Gérer les classes".</div>';
+            return;
         }
 
-        function renderCourseSlot(week, slotNum, globalNum) {
-            const key = `${state.currentClass}-W${week}-C${slotNum}`;
-            const course = state.courses[key] || {};
+        const startWeek = (state.currentPeriod - 1) * 4 + 1;
+        
+        for (let week = 0; week < 4; week++) {
+            const weekNumber = startWeek + week;
+            const weekCard = document.createElement('div');
+            weekCard.className = 'week-card';
             
-            return `
-                <div class="course-slot" onclick="editCourse('${key}', ${week}, ${slotNum}, ${globalNum})">
-                    <h4>Cours ${globalNum}</h4>
-                    ${course.date ? `<div class="course-date">📅 ${formatDate(course.date)}</div>` : '<div class="course-date">⚠️ Date non définie</div>'}
-                    ${course.sequence ? `<div class="course-content"><strong>Séquence:</strong> ${course.sequence}</div>` : ''}
-                    ${course.content ? `<div class="course-content">${truncate(course.content, 100)}</div>` : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'}
-                    ${course.homework ? `<div class="course-homework"><strong>📝 À faire:</strong> ${truncate(course.homework, 80)}</div>` : ''}
-                    ${course.notes ? `<div class="course-notes"><strong>💭 Notes:</strong> ${truncate(course.notes, 80)}</div>` : ''}
+            const pattern = getWeekPattern(weekNumber);
+            
+            let coursesHTML = '';
+            
+            // Calculer le numéro de cours global
+            let globalCourseNum = 0;
+            for (let w = 1; w < weekNumber; w++) {
+                globalCourseNum += getWeekPattern(w).courses;
+            }
+            
+            for (let i = 0; i < pattern.courses; i++) {
+                globalCourseNum++;
+                coursesHTML += renderCourseSlot(weekNumber, i + 1, globalCourseNum);
+            }
+            
+            // Si c'est une semaine avec moins de 3 cours, ajouter une case notes
+            if (pattern.courses < 3) {
+                coursesHTML += renderNotesSlot(weekNumber);
+            }
+            
+            weekCard.innerHTML = `
+                <div class="week-header">
+                    <span>Semaine ${weekNumber}</span>
+                    <span class="week-type">Semaine ${pattern.type} (${pattern.courses} cours)</span>
                 </div>
+                ${coursesHTML}
             `;
-        }
-
-        function renderNotesSlot(week) {
-            const key = `${state.currentClass}-W${week}-NOTES`;
-            const notes = state.weekNotes[key] || '';
             
-            return `
-                <div class="notes-slot" onclick="editWeekNotes('${key}', ${week})">
-                    <h4>📝 Notes de la semaine</h4>
-                    ${notes ? `<div class="course-content">${truncate(notes, 150)}</div>` : '<div class="course-content" style="color: #999;">Cliquez pour ajouter des notes</div>'}
-                </div>
-            `;
+            grid.appendChild(weekCard);
         }
+    }
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '';
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        }
+    function renderCourseSlot(week, slotNum, globalNum) {
+        const key = `${state.currentClass}-W${week}-C${slotNum}`;
+        // Utiliser || {} pour garantir que course est un objet même s'il n'existe pas
+        const course = state.courses[key] || {}; 
+        
+        return `
+            <div class="course-slot" onclick="editCourse('${key}', ${week}, ${slotNum}, ${globalNum})">
+                <h4>Cours ${globalNum}</h4>
+                ${course.date ? `<div class="course-date">📅 ${formatDate(course.date)}</div>` : '<div class="course-date">⚠️ Date non définie</div>'}
+                ${course.sequence ? `<div class="course-content"><strong>Séquence:</strong> ${course.sequence}</div>` : ''}
+                ${course.content ? `<div class="course-content">${truncate(course.content, 100)}</div>` : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'}
+                ${course.homework ? `<div class="course-homework"><strong>📝 À faire:</strong> ${truncate(course.homework, 80)}</div>` : ''}
+                ${course.notes ? `<div class="course-notes"><strong>💭 Notes:</strong> ${truncate(course.notes, 80)}</div>` : ''}
+            </div>
+        `;
+    }
 
-        function truncate(text, length) {
-            if (!text) return '';
-            return text.length > length ? text.substring(0, length) + '...' : text;
-        }
+    function renderNotesSlot(week) {
+        const key = `${state.currentClass}-W${week}-NOTES`;
+        const notes = state.weekNotes[key] || '';
+        
+        return `
+            <div class="notes-slot" onclick="editWeekNotes('${key}', ${week})">
+                <h4>📝 Notes de la semaine</h4>
+                ${notes ? `<div class="course-content">${truncate(notes, 150)}</div>` : '<div class="course-content" style="color: #999;">Cliquez pour ajouter des notes</div>'}
+            </div>
+        `;
+    }
 
-        function editCourse(key, week, slotNum, globalNum) {
-            currentEditingCourse = key;
-            const course = state.courses[key] || {};
-            
-            document.getElementById('courseDate').value = course.date || '';
-            document.getElementById('courseContent').value = course.content || '';
-            document.getElementById('courseHomework').value = course.homework || '';
-            document.getElementById('courseNotes').value = course.notes || '';
-            
-            // Charger les séquences dans le select
-            const select = document.getElementById('courseSequence');
-            select.innerHTML = '<option value="">-- Choisir une séquence --</option>';
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        // Ajout d'un jour pour corriger le décalage UTC/local lors de la création d'une date (Date('AAAA-MM-JJ') crée à minuit UTC)
+        date.setDate(date.getDate() + 1); 
+        return date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function truncate(text, length) {
+        if (!text) return '';
+        return text.length > length ? text.substring(0, length) + '...' : text;
+    }
+
+    function editCourse(key, week, slotNum, globalNum) {
+        currentEditingCourse = key;
+        const course = state.courses[key] || {};
+        
+        document.getElementById('courseDate').value = course.date || '';
+        document.getElementById('courseContent').value = course.content || '';
+        document.getElementById('courseHomework').value = course.homework || '';
+        document.getElementById('courseNotes').value = course.notes || '';
+        
+        // Charger les séquences dans le select
+        const select = document.getElementById('courseSequence');
+        select.innerHTML = '<option value="">-- Choisir une séquence --</option>';
+        const sequences = state.sequences[state.currentClass] || [];
+        sequences.forEach((seq, idx) => {
+            const option = document.createElement('option');
+            option.value = idx;
+            option.textContent = seq.name;
+            if (course.sequence === seq.name) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+        
+        document.getElementById('courseModal').classList.add('active');
+    }
+
+    function closeCourseModal() {
+        document.getElementById('courseModal').classList.remove('active');
+        currentEditingCourse = null;
+    }
+
+    function saveCourse() {
+        if (!currentEditingCourse) return;
+        
+        const sequenceIdx = document.getElementById('courseSequence').value;
+        let sequenceName = '';
+        let defaultContent = '';
+        let defaultHomework = '';
+        
+        if (sequenceIdx !== '') {
             const sequences = state.sequences[state.currentClass] || [];
-            sequences.forEach((seq, idx) => {
-                const option = document.createElement('option');
-                option.value = idx;
-                option.textContent = seq.name;
-                if (course.sequence === seq.name) {
-                    option.selected = true;
-                }
-                select.appendChild(option);
-            });
-            
-            document.getElementById('courseModal').classList.add('active');
-        }
-
-        function closeCourseModal() {
-            document.getElementById('courseModal').classList.remove('active');
-            currentEditingCourse = null;
-        }
-
-        function saveCourse() {
-            if (!currentEditingCourse) return;
-            
-            const sequenceIdx = document.getElementById('courseSequence').value;
-            let sequenceName = '';
-            let defaultContent = '';
-            let defaultHomework = '';
-            
-            if (sequenceIdx !== '') {
-                const sequences = state.sequences[state.currentClass] || [];
-                const sequence = sequences[sequenceIdx];
-                if (sequence) {
-                    sequenceName = sequence.name;
-                    defaultContent = sequence.content || '';
-                    defaultHomework = sequence.homework || '';
-                }
+            const sequence = sequences[sequenceIdx];
+            if (sequence) {
+                sequenceName = sequence.name;
+                defaultContent = sequence.content || '';
+                defaultHomework = sequence.homework || '';
             }
-            
-            const content = document.getElementById('courseContent').value || defaultContent;
-            const homework = document.getElementById('courseHomework').value || defaultHomework;
-            
-            state.courses[currentEditingCourse] = {
-                date: document.getElementById('courseDate').value,
-                sequence: sequenceName,
-                content: content,
-                homework: homework,
-                notes: document.getElementById('courseNotes').value
-            };
-            
-            saveData();
-            renderCalendar();
-            closeCourseModal();
         }
+        
+        const content = document.getElementById('courseContent').value || defaultContent;
+        const homework = document.getElementById('courseHomework').value || defaultHomework;
+        
+        state.courses[currentEditingCourse] = {
+            date: document.getElementById('courseDate').value,
+            sequence: sequenceName,
+            content: content,
+            homework: homework,
+            notes: document.getElementById('courseNotes').value
+        };
+        
+        saveData();
+        renderCalendar();
+        closeCourseModal();
+    }
 
-        function editWeekNotes(key, week) {
-            currentEditingWeek = key;
-            const notes = state.weekNotes[key] || '';
-            document.getElementById('weekNotes').value = notes;
-            document.getElementById('notesModal').classList.add('active');
+    function editWeekNotes(key, week) {
+        currentEditingWeek = key;
+        const notes = state.weekNotes[key] || '';
+        document.getElementById('weekNotes').value = notes;
+        document.getElementById('notesModal').classList.add('active');
+    }
+
+    function closeNotesModal() {
+        document.getElementById('notesModal').classList.remove('active');
+        currentEditingWeek = null;
+    }
+
+    function saveWeekNotes() {
+        if (!currentEditingWeek) return;
+        
+        state.weekNotes[currentEditingWeek] = document.getElementById('weekNotes').value;
+        
+        saveData();
+        renderCalendar();
+        closeNotesModal();
+    }
+
+    // Gestion des classes
+    function openClassManager() {
+        // CORRECTION/SECURITE : S'assurer que classes est défini avant de l'utiliser
+        if (!state.classes) {
+            state.classes = [];
         }
+        renderClassList();
+        document.getElementById('classModal').classList.add('active');
+    }
 
-        function closeNotesModal() {
-            document.getElementById('notesModal').classList.remove('active');
-            currentEditingWeek = null;
+    function closeClassManager() {
+        document.getElementById('classModal').classList.remove('active');
+        document.getElementById('className').value = '';
+    }
+
+    function addClass() {
+        const name = document.getElementById('className').value.trim();
+        if (!name) {
+            alert('Veuillez entrer un nom de classe');
+            return;
         }
-
-        function saveWeekNotes() {
-            if (!currentEditingWeek) return;
-            
-            state.weekNotes[currentEditingWeek] = document.getElementById('weekNotes').value;
-            
-            saveData();
-            renderCalendar();
-            closeNotesModal();
+        
+        const pattern = document.querySelector('input[name="weekPattern"]:checked').value;
+        const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        
+        // Vérifier si la classe existe déjà
+        if (state.classes.find(c => c.id === id)) {
+            alert('Cette classe existe déjà');
+            return;
         }
-
-        // Gestion des classes
-        function openClassManager() {
-            renderClassList();
-            document.getElementById('classModal').classList.add('active');
+        
+        state.classes.push({
+            id: id,
+            name: name,
+            pattern: pattern
+        });
+        
+        if (!state.currentClass) {
+            state.currentClass = id;
         }
+        
+        saveData();
+        updateClassSelect();
+        renderClassList();
+        
+        document.getElementById('className').value = '';
+    }
 
-        function closeClassManager() {
-            document.getElementById('classModal').classList.remove('active');
-            document.getElementById('className').value = '';
+    function renderClassList() {
+        const list = document.getElementById('classList');
+        
+        // Sécurité supplémentaire si state.classes est undefined (même si loadData devrait le corriger)
+        if (!state.classes || state.classes.length === 0) {
+            list.innerHTML = '<div class="empty-state">Aucune classe définie</div>';
+            return;
         }
+        
+        list.innerHTML = state.classes.map((cls, idx) => {
+            const [coursesA, coursesB] = cls.pattern.split('-');
+            return `
+                <div class="class-item">
+                    <div class="class-info">
+                        <div class="class-name">${cls.name}</div>
+                        <div class="class-pattern">Semaine A: ${coursesA} cours | Semaine B: ${coursesB} cours</div>
+                    </div>
+                    <div class="sequence-actions">
+                        <button class="btn-small btn-delete" onclick="deleteClass(${idx})">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
 
-        function addClass() {
-            const name = document.getElementById('className').value.trim();
-            if (!name) {
-                alert('Veuillez entrer un nom de classe');
-                return;
-            }
+    function deleteClass(idx) {
+        if (state.classes.length === 1) {
+            alert('Vous devez avoir au moins une classe');
+            return;
+        }
+        
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette classe ? Toutes les données associées seront perdues.')) {
+            const deletedId = state.classes[idx].id;
+            state.classes.splice(idx, 1);
             
-            const pattern = document.querySelector('input[name="weekPattern"]:checked').value;
-            const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-            
-            // Vérifier si la classe existe déjà
-            if (state.classes.find(c => c.id === id)) {
-                alert('Cette classe existe déjà');
-                return;
-            }
-            
-            state.classes.push({
-                id: id,
-                name: name,
-                pattern: pattern
-            });
-            
-            if (!state.currentClass) {
-                state.currentClass = id;
+            // Si on supprime la classe active, choisir la première
+            if (state.currentClass === deletedId) {
+                state.currentClass = state.classes.length > 0 ? state.classes[0].id : '';
             }
             
             saveData();
             updateClassSelect();
             renderClassList();
-            
-            document.getElementById('className').value = '';
+            renderCalendar();
         }
+    }
 
-        function renderClassList() {
-            const list = document.getElementById('classList');
-            
-            if (state.classes.length === 0) {
-                list.innerHTML = '<div class="empty-state">Aucune classe définie</div>';
-                return;
-            }
-            
-            list.innerHTML = state.classes.map((cls, idx) => {
-                const [coursesA, coursesB] = cls.pattern.split('-');
-                return `
-                    <div class="class-item">
-                        <div class="class-info">
-                            <div class="class-name">${cls.name}</div>
-                            <div class="class-pattern">Semaine A: ${coursesA} cours | Semaine B: ${coursesB} cours</div>
-                        </div>
-                        <div class="sequence-actions">
-                            <button class="btn-small btn-delete" onclick="deleteClass(${idx})">🗑️</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+    // Gestion des séquences
+    function openSequenceManager() {
+        renderSequenceList();
+        document.getElementById('sequenceModal').classList.add('active');
+    }
+
+    function closeSequenceManager() {
+        document.getElementById('sequenceModal').classList.remove('active');
+        document.getElementById('sequenceName').value = '';
+        document.getElementById('sequenceContent').value = '';
+        document.getElementById('sequenceHomework').value = '';
+    }
+
+    function addSequence() {
+        const name = document.getElementById('sequenceName').value.trim();
+        if (!name) {
+            alert('Veuillez entrer un nom de séquence');
+            return;
         }
-
-        function deleteClass(idx) {
-            if (state.classes.length === 1) {
-                alert('Vous devez avoir au moins une classe');
-                return;
-            }
-            
-            if (confirm('Êtes-vous sûr de vouloir supprimer cette classe ? Toutes les données associées seront perdues.')) {
-                const deletedId = state.classes[idx].id;
-                state.classes.splice(idx, 1);
-                
-                // Si on supprime la classe active, choisir la première
-                if (state.currentClass === deletedId) {
-                    state.currentClass = state.classes[0].id;
-                }
-                
-                saveData();
-                updateClassSelect();
-                renderClassList();
-                renderCalendar();
-            }
+        
+        if (!state.sequences[state.currentClass]) {
+            state.sequences[state.currentClass] = [];
         }
+        
+        state.sequences[state.currentClass].push({
+            name: name,
+            content: document.getElementById('sequenceContent').value,
+            homework: document.getElementById('sequenceHomework').value
+        });
+        
+        saveData();
+        renderSequenceList();
+        
+        document.getElementById('sequenceName').value = '';
+        document.getElementById('sequenceContent').value = '';
+        document.getElementById('sequenceHomework').value = '';
+    }
 
-        // Gestion des séquences
-        function openSequenceManager() {
-            renderSequenceList();
-            document.getElementById('sequenceModal').classList.add('active');
+    function renderSequenceList() {
+        const list = document.getElementById('sequenceList');
+        const sequences = state.sequences[state.currentClass] || [];
+        
+        if (sequences.length === 0) {
+            list.innerHTML = '<div class="empty-state">Aucune séquence définie pour cette classe</div>';
+            return;
         }
+        
+        list.innerHTML = sequences.map((seq, idx) => `
+            <div class="sequence-item">
+                <div>
+                    <strong>${seq.name}</strong>
+                    ${seq.content ? `<div style="font-size: 0.9em; color: #6c757d; margin-top: 5px;">${truncate(seq.content, 60)}</div>` : ''}
+                </div>
+                <div class="sequence-actions">
+                    <button class="btn-small btn-delete" onclick="deleteSequence(${idx})">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+    }
 
-        function closeSequenceManager() {
-            document.getElementById('sequenceModal').classList.remove('active');
-            document.getElementById('sequenceName').value = '';
-            document.getElementById('sequenceContent').value = '';
-            document.getElementById('sequenceHomework').value = '';
-        }
-
-        function addSequence() {
-            const name = document.getElementById('sequenceName').value.trim();
-            if (!name) {
-                alert('Veuillez entrer un nom de séquence');
-                return;
-            }
-            
-            if (!state.sequences[state.currentClass]) {
-                state.sequences[state.currentClass] = [];
-            }
-            
-            state.sequences[state.currentClass].push({
-                name: name,
-                content: document.getElementById('sequenceContent').value,
-                homework: document.getElementById('sequenceHomework').value
-            });
-            
+    function deleteSequence(idx) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette séquence ?')) {
+            state.sequences[state.currentClass].splice(idx, 1);
             saveData();
             renderSequenceList();
-            
-            document.getElementById('sequenceName').value = '';
-            document.getElementById('sequenceContent').value = '';
-            document.getElementById('sequenceHomework').value = '';
         }
+    }
 
-        function renderSequenceList() {
-            const list = document.getElementById('sequenceList');
-            const sequences = state.sequences[state.currentClass] || [];
-            
-            if (sequences.length === 0) {
-                list.innerHTML = '<div class="empty-state">Aucune séquence définie pour cette classe</div>';
-                return;
-            }
-            
-            list.innerHTML = sequences.map((seq, idx) => `
-                <div class="sequence-item">
-                    <div>
-                        <strong>${seq.name}</strong>
-                        ${seq.content ? `<div style="font-size: 0.9em; color: #6c757d; margin-top: 5px;">${truncate(seq.content, 60)}</div>` : ''}
-                    </div>
-                    <div class="sequence-actions">
-                        <button class="btn-small btn-delete" onclick="deleteSequence(${idx})">🗑️</button>
-                    </div>
-                </div>
-            `).join('');
+    // Export/Import
+    function openExportModal() {
+        document.getElementById('exportModal').classList.add('active');
+    }
+
+    function closeExportModal() {
+        document.getElementById('exportModal').classList.remove('active');
+    }
+
+    function exportData() {
+        const dataStr = JSON.stringify(state, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `classeur-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importData() {
+        const file = document.getElementById('importFile').files[0];
+        if (!file) {
+            alert('Veuillez sélectionner un fichier');
+            return;
         }
-
-        function deleteSequence(idx) {
-            if (confirm('Êtes-vous sûr de vouloir supprimer cette séquence ?')) {
-                state.sequences[state.currentClass].splice(idx, 1);
-                saveData();
-                renderSequenceList();
-            }
-        }
-
-        // Export/Import
-        function openExportModal() {
-            document.getElementById('exportModal').classList.add('active');
-        }
-
-        function closeExportModal() {
-            document.getElementById('exportModal').classList.remove('active');
-        }
-
-        function exportData() {
-            const dataStr = JSON.stringify(state, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `classeur-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function importData() {
-            const file = document.getElementById('importFile').files[0];
-            if (!file) {
-                alert('Veuillez sélectionner un fichier');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if (confirm('Cette action remplacera toutes vos données actuelles. Continuer ?')) {
-                        state = imported;
-                        saveData();
-                        updateClassSelect();
-                        renderCalendar();
-                        closeExportModal();
-                        alert('Données importées avec succès !');
-                    }
-                } catch (error) {
-                    alert('Erreur lors de l\'import : fichier invalide');
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (confirm('Cette action remplacera toutes vos données actuelles. Continuer ?')) {
+                    state = imported;
+                    saveData();
+                    updateClassSelect();
+                    renderCalendar();
+                    closeExportModal();
+                    alert('Données importées avec succès !');
                 }
-            };
-            reader.readAsText(file);
-        }
+            } catch (error) {
+                alert('Erreur lors de l\'import : fichier invalide');
+            }
+        };
+        reader.readAsText(file);
+    }
 
-        // Démarrer l'application
-        init();
-    </script>
+    // Démarrer l'application
+    init();
+</script>
 </body>
 </html>
