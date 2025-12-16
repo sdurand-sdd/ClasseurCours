@@ -647,43 +647,8 @@
                     console.error("Erreur lors de la sauvegarde sur Firebase:", error);
                 });
         }
-
-        // =========================================================
-// NOUVELLE FONCTION : Réinitialisation Annuelle
-// =========================================================
-
-/**
- * Réinitialise les données de l'application liées à l'année scolaire (classes, cours, notes)
- * tout en conservant le catalogue de séquences/séances (state.sequences).
- */
-function resetData() {
-    // Avertissement de confirmation avant de procéder
-    if (!confirm("ATTENTION : Êtes-vous sûr de vouloir réinitialiser l'année scolaire ? Cela effacera toutes les classes, notes de cours et notes hebdomadaires, MAIS CONSERVERA votre catalogue de SÉQUENCES et SÉANCES !")) {
-        return;
-    }
-    
-    // Réinitialisation des données spécifiques à l'année scolaire
-    state.currentClass = '';
-    state.currentPeriod = 1;
-    state.classes = [];
-    state.courses = {}; 
-    state.weekNotes = {};
-    
-    // NOTE : state.sequences N'EST PAS réinitialisé. Il conserve votre catalogue.
-
-    // Sauvegarde immédiate de l'état réinitialisé sur Firebase
-    saveData(); 
-    
-    // Recharger l'interface pour afficher l'état vide
-    init();
-    
-    alert("L'année scolaire a été réinitialisée. Votre catalogue de séquences est conservé.");
-}
-
-// =========================================================
-// FIN DE resetData()
-// =========================================================
         // ------------------------------------------------------------------
+
         // Initialiser l'application
       // ------------------------------------------------------------------
         // NOUVELLE FONCTION : Initialiser l'application
@@ -1430,5 +1395,10 @@ function resetData() {
         // Démarrer l'application
         init();
     </script>
+<div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
+    <button onclick="resetData()" class="btn btn-danger">
+        <i class="fas fa-trash-alt"></i> Réinitialiser l'Année Scolaire
+    </button>
+</div>
 </body>
 </html>
