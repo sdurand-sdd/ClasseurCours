@@ -630,31 +630,34 @@
       // ------------------------------------------------------------------
         // NOUVELLE FONCTION : Charger les données depuis Firebase
         // ------------------------------------------------------------------
-       function loadData() {
-    // On vérifie qu'on a bien un userId avant de lancer la requête
+      function loadData() {
+    // 1. Vérification de sécurité
     if (!userId) {
-        console.warn("Pas d'ID utilisateur, chargement annulé.");
-        return Promise.resolve(); 
+        console.warn("Utilisateur non détecté.");
+        return Promise.resolve(); // Ici le return est légal car il est DANS la fonction
     }
 
-    const yearPath = state.currentYearId || "2024-2025"; // Sécurité si l'année n'est pas définie
+    // 2. Définition du chemin (on utilise l'année scolaire)
+    // Si state.currentYearId n'existe pas, on prend 2024-2025 par défaut
+    const year = state.currentYearId || "2024-2025";
+    const path = 'classeurData/' + userId + '/' + year;
 
-    return db.ref('classeurData/' + userId + '/' + yearPath).once('value')
+    console.log("Tentative de chargement :", path);
+
+    return db.ref(path).once('value')
         .then((snapshot) => {
-            const data = snapshot.val(); // On récupère les données
-            
+            const data = snapshot.val();
             if (data) {
-                // Si des données existent, on met à jour l'état
+                // On fusionne les données chargées dans l'état
                 state = { ...state, ...data };
-                console.log("Données chargées pour l'année : " + yearPath);
+                console.log("Données chargées avec succès !");
             } else {
-                console.log("Aucune donnée trouvée pour cette année, utilisation de l'état par défaut.");
-                // On peut ici initialiser des classes par défaut si besoin
+                console.log("Dossier vide sur Firebase pour cette année.");
             }
-            return true;
+            return true; 
         })
         .catch((error) => {
-            console.error("Erreur de chargement Firebase:", error);
+            console.error("Erreur Firebase :", error);
         });
 }
                     
