@@ -772,25 +772,33 @@ auth.onAuthStateChanged(handleAuthStateChange);
                 saveData();
             });
 
-            document.getElementById('prevPeriod').addEventListener('click', () => {
-                if (state.currentPeriod > 1) {
-                    state.currentPeriod--;
-                    renderCalendar();
-                    updateNavigationButtons();
-                    updatePeriodInfo();
-                    saveData();
-                }
-            });
+           // Pour le bouton Précédent
+const btnPrev = document.getElementById('prevPeriod');
+btnPrev.replaceWith(btnPrev.cloneNode(true)); // On "nettoie" les anciens écouteurs
+document.getElementById('prevPeriod').addEventListener('click', () => {
+    let p = parseInt(state.currentPeriod);
+    if (p > 1) {
+        state.currentPeriod = p - 1;
+        renderCalendar();
+        updateNavigationButtons();
+        updatePeriodInfo();
+        saveData();
+    }
+});
 
-            document.getElementById('nextPeriod').addEventListener('click', () => {
-                if (state.currentPeriod < 9) {
-                    state.currentPeriod++;
-                    renderCalendar();
-                    updateNavigationButtons();
-                    updatePeriodInfo();
-                    saveData();
-                }
-            });
+// Pour le bouton Suivant
+const btnNext = document.getElementById('nextPeriod');
+btnNext.replaceWith(btnNext.cloneNode(true)); // On "nettoie" les anciens écouteurs
+document.getElementById('nextPeriod').addEventListener('click', () => {
+    let p = parseInt(state.currentPeriod);
+    if (p < 5) { // On remet à 5 si vous fonctionnez par périodes de vacances
+        state.currentPeriod = p + 1;
+        renderCalendar();
+        updateNavigationButtons();
+        updatePeriodInfo();
+        saveData();
+    }
+});
 
             document.getElementById('courseForm').addEventListener('submit', (e) => {
                 e.preventDefault();
