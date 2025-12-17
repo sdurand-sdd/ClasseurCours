@@ -349,7 +349,12 @@
         <div class="header">
             <h1>📚 Classeur Numérique Pédagogique</h1>
         </div>
-        
+       <label for="yearSelect">Année scolaire :</label>
+<select id="yearSelect" onchange="changeYear(this.value)">
+    <option value="2024-2025">2024-2025</option>
+    <option value="2023-2024">2023-2024</option>
+    <option value="2025-2026">2025-2026</option>
+</select> 
         <div class="controls">
             <div class="class-selector">
                 <label for="classSelect">Classe :</label>
@@ -608,6 +613,7 @@
         // ... le reste de votre état actuel ...
         // État de l'application
         let state = {
+            currentYearId: '2024-2025', // <-- On ajoute cette ligne par défaut
             currentClass: '',
             currentPeriod: 1,
             classes: [],
@@ -685,6 +691,33 @@ function loadData() {
             return false;
         });
 } 
+// --- Après la fin de loadData ---
+
+async function changeYear(newYearId) {
+    // 1. On met à jour l'année dans l'état
+    state.currentYearId = newYearId;
+    
+    // 2. On vide les données actuelles de l'affichage pour éviter les mélanges
+    state.classes = [];
+    state.courses = {};
+    state.weekNotes = {};
+    state.currentClass = '';
+    // Note: on peut choisir de garder ou non les séquences (catalogue commun)
+    // state.sequences = {}; 
+
+    console.log("Bascule vers l'année : " + newYearId);
+
+    // 3. On recharge les données de cette nouvelle année
+    await loadData();
+    
+    // 4. On redessine toute l'interface
+    updateClassSelect();
+    updatePeriodInfo();
+    renderCalendar();
+    
+    // Optionnel : message de confirmation
+    console.log("Affichage mis à jour pour " + newYearId);
+}
 // <--- VÉRIFIEZ BIEN QU'IL N'Y A PAS DE "RETURN" JUSTE APRÈS CETTE LIGNE
 
         // =========================================================
