@@ -617,6 +617,7 @@
             weekNotes: {},
             // state.sequences stocke maintenant les séquences par NIVEAU, pour le catalogue centralisé
             sequences: {} // Exemple: { '3': [seq1, seq2], '4': [seq3] }
+            state.holidays = state.holidays || [];
         };
 
         let currentEditingCourse = null; // Key du cours actuel en édition
@@ -660,8 +661,11 @@ function loadData() {
             const data = snapshot.val();
             
             if (data) {
+               state.holidays = state.holidays || [];
                 // Fusion des données
+                if (!state.holidays)
                 state = { ...state, ...data };
+                
                 console.log("Données chargées !");
             } else {
                 console.log("Dossier vide. Initialisation par défaut...");
