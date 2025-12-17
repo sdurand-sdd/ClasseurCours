@@ -616,8 +616,8 @@
             courses: {},
             weekNotes: {},
             // state.sequences stocke maintenant les séquences par NIVEAU, pour le catalogue centralisé
-            sequences: {} // Exemple: { '3': [seq1, seq2], '4': [seq3] }
-            state.holidays = state.holidays || [];
+            sequences: {}, // Exemple: { '3': [seq1, seq2], '4': [seq3] }
+            holidays: []
         };
 
         let currentEditingCourse = null; // Key du cours actuel en édition
