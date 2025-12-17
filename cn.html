@@ -351,9 +351,9 @@
         </div>
        <label for="yearSelect">Année scolaire :</label>
 <select id="yearSelect" onchange="changeYear(this.value)">
-    <option value="2024-2025">2024-2025</option>
-    <option value="2023-2024">2023-2024</option>
     <option value="2025-2026">2025-2026</option>
+    <option value="2026-2027">2026-2027</option>
+    <option value="2027-2028">2027-2028</option>
 </select> 
         <div class="controls">
             <div class="class-selector">
@@ -613,7 +613,7 @@
         // ... le reste de votre état actuel ...
         // État de l'application
         let state = {
-            currentYearId: '2024-2025', // <-- On ajoute cette ligne par défaut
+            currentYearId: '2025-2026', // <-- On ajoute cette ligne par défaut
             currentClass: '',
             currentPeriod: 1,
             classes: [],
@@ -671,9 +671,9 @@ function loadData() {
                 console.log("Dossier vide. Initialisation par défaut...");
                 state.classes = [
                     { id: '3-3', name: '3°3', pattern: '3-2' },
-                    { id: '4-1', name: '4°1', pattern: '3-2' },
-                    { id: '5-1', name: '5°1', pattern: '3-2' },
-                    { id: '6-1', name: '6°1', pattern: '3-2' }
+                    { id: '4-2', name: '4°1', pattern: '3-2' },
+                    { id: '5-3', name: '5°1', pattern: '3-2' },
+                    { id: '4-4', name: '6°1', pattern: '3-2' }
                 ];
                 state.currentClass = state.classes[0].id;
                 state.sequences = {};
