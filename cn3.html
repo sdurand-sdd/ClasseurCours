@@ -773,6 +773,8 @@ auth.onAuthStateChanged(handleAuthStateChange);
             });
 
            // Pour le bouton Précédent
+const TOTAL_PERIODES = 10;
+            
 const btnPrev = document.getElementById('prevPeriod');
 btnPrev.replaceWith(btnPrev.cloneNode(true)); // On "nettoie" les anciens écouteurs
 document.getElementById('prevPeriod').addEventListener('click', () => {
