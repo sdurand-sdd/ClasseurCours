@@ -789,11 +789,12 @@ document.getElementById('prevPeriod').addEventListener('click', () => {
 });
 
 // Pour le bouton Suivant
+const TOTAL_PERIODES = 10;            
 const btnNext = document.getElementById('nextPeriod');
 btnNext.replaceWith(btnNext.cloneNode(true)); // On "nettoie" les anciens écouteurs
 document.getElementById('nextPeriod').addEventListener('click', () => {
     let p = parseInt(state.currentPeriod);
-    if (p < 5) { // On remet à 5 si vous fonctionnez par périodes de vacances
+    if (p < 10) { // On remet à 5 si vous fonctionnez par périodes de vacances
         state.currentPeriod = p + 1;
         renderCalendar();
         updateNavigationButtons();
