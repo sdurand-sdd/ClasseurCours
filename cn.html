@@ -940,18 +940,24 @@ auth.onAuthStateChanged(handleAuthStateChange);
             `;
         }
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '';
-            const date = new Date(dateStr);
-            // Corriger le décalage de date lors de l'affichage
-            date.setDate(date.getDate() + 1); 
-            return date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        }
-
-        function truncate(text, length) {
-            if (!text) return '';
-            return text.length > length ? text.substring(0, length) + '...' : text;
-        }
+       function formatDate(dateStr) {
+    if (!dateStr) return "";
+    
+    // On découpe la chaîne "2025-09-04" sans laisser le système l'interpréter
+    const parts = dateStr.split('-');
+    
+    // On crée la date à MIDI (12h) pour éviter que le décalage 
+    // horaire (UTC+1 ou UTC+2) ne fasse basculer le jour.
+    const year = parseInt(parts[0]);
+    const month = parseInt(parts[1]) - 1; // Janvier est 0
+    const day = parseInt(parts[2]);
+    
+    const dateObj = new Date(year, month, day, 12, 0, 0);
+    
+    // On affiche proprement
+    const options = { weekday: 'long', day: 'numeric', month: 'long' };
+    return dateObj.toLocaleDateString('fr-FR', options);
+}
 
         // =========================================================
         // NOUVELLES FONCTIONS DE SÉLECTION EN CASCADE
