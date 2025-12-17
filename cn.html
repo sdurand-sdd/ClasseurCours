@@ -630,14 +630,24 @@
       // ------------------------------------------------------------------
         // NOUVELLE FONCTION : Charger les données depuis Firebase
         // ------------------------------------------------------------------
+// --- FONCTION DE SAUVEGARDE ---
+function saveData() {
+    if (!userId) return;
+    const year = state.currentYearId || "2024-2025";
+    const path = 'classeurData/' + userId + '/' + year;
+
+    db.ref(path).set(state)
+        .then(() => console.log("Sauvegarde réussie dans :", path))
+        .catch((error) => console.error("Erreur sauvegarde :", error));
+}
+
+// --- FONCTION DE CHARGEMENT ---
 function loadData() {
-    // 1. Vérification de sécurité
     if (!userId) {
         console.warn("Utilisateur non détecté.");
         return Promise.resolve();
     }
 
-    // 2. Définition du chemin
     const year = state.currentYearId || "2024-2025";
     const path = 'classeurData/' + userId + '/' + year;
 
@@ -648,13 +658,11 @@ function loadData() {
             const data = snapshot.val();
             
             if (data) {
-                // On fusionne les données chargées dans l'état
+                // Fusion des données
                 state = { ...state, ...data };
-                console.log("Données chargées avec succès !");
+                console.log("Données chargées !");
             } else {
                 console.log("Dossier vide. Initialisation par défaut...");
-                
-                // INITIALISATION PAR DÉFAUT (si la base est vide pour cette année)
                 state.classes = [
                     { id: '3-3', name: '3°3', pattern: '3-2' },
                     { id: '4-1', name: '4°1', pattern: '3-2' },
@@ -663,68 +671,21 @@ function loadData() {
                 ];
                 state.currentClass = state.classes[0].id;
                 state.sequences = {};
-                
-                // On sauvegarde immédiatement cette structure de base
                 saveData(); 
             }
 
-            // Sécurités supplémentaires pour l'état
+            // Sécurités
             if (!state.currentClass && state.classes && state.classes.length > 0) {
                 state.currentClass = state.classes[0].id;
             }
-            if (!state.sequences) {
-                state.sequences = {};
-            }
-
             return true; 
         })
         .catch((error) => {
             console.error("Erreur Firebase :", error);
+            return false;
         });
-}
-                    // Code d'initialisation par défaut (si la base est vide)
-                    if (!state.classes || !Array.isArray(state.classes) || state.classes.length === 0) {
-                        state.classes = [
-                            { id: '3-3', name: '3°3', pattern: '3-2' },
-                            { id: '4-1', name: '4°1', pattern: '3-2' },
-                            { id: '5-1', name: '5°1', pattern: '3-2' },
-                            { id: '6-1', name: '6°1', pattern: '3-2' }
-                        ];
-                        state.currentClass = state.classes[0].id;
-                        // Sauvegarder immédiatement les données par défaut dans Firebase
-                        saveData(); 
-                    }
-
-                    if (!state.currentClass && state.classes.length > 0) {
-                        state.currentClass = state.classes[0].id;
-                    }
-                    
-                    if (!state.sequences || typeof state.sequences !== 'object') {
-                         state.sequences = {};
-                    }
-                    
-                    // IMPORTANT : Rendre l'initialisation asynchrone pour init
-                    return true; 
-                });
-        }
-        // ------------------------------------------------------------------
-
-        // ------------------------------------------------------------------
-        // NOUVELLE FONCTION : Sauvegarder les données dans Firebase
-        // ------------------------------------------------------------------
-        function saveData() {
-            // Supprimer les variables temporaires de l'état si elles existent
-            const stateToSave = { ...state }; 
-
-            // Utiliser 'set' pour écraser les données à ce chemin avec l'état actuel
-            db.ref('classeurData/' + userId).set(stateToSave)
-                .then(() => {
-                    console.log("Données sauvegardées sur Firebase.");
-                })
-                .catch((error) => {
-                    console.error("Erreur lors de la sauvegarde sur Firebase:", error);
-                });
-        }
+} 
+// <--- VÉRIFIEZ BIEN QU'IL N'Y A PAS DE "RETURN" JUSTE APRÈS CETTE LIGNE
 
         // =========================================================
 // GESTION DE L'ÉTAT DE CONNEXION
