@@ -663,9 +663,9 @@ function loadData() {
             if (data) {
                state.holidays = state.holidays || [];
                 // Fusion des données
-                if (!state.holidays)
                 state = { ...state, ...data };
-                
+                if (!state.holidays) {
+                               
                 console.log("Données chargées !");
             } else {
                 console.log("Dossier vide. Initialisation par défaut...");
