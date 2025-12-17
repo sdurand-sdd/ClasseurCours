@@ -1562,6 +1562,11 @@ function signUp() {
 function signOutUser() {
     auth.signOut();
 }
+// Fonction pour raccourcir le texte si il est trop long
+function truncate(str, n) {
+    if (!str) return '';
+    return (str.length > n) ? str.substr(0, n - 1) + '...' : str;
+}
     </script>
 
 </body>
