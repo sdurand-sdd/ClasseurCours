@@ -685,7 +685,7 @@ function loadData() {
                 state.currentClass = state.classes[0].id;
             }
             return true; 
-        })
+        }
         .catch((error) => {
             console.error("Erreur Firebase :", error);
             return false;
