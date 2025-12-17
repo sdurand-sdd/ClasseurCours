@@ -630,20 +630,33 @@
       // ------------------------------------------------------------------
         // NOUVELLE FONCTION : Charger les données depuis Firebase
         // ------------------------------------------------------------------
-        function loadData() {
-    // DOIT UTILISER L'UID DYNAMIQUE : userId
-    return db.ref('classeurData/' + userId).once('value') // <-- CORRIGÉ
-        .then((snapshot) => {
-                    
-                    if (saved) {
-                        try {
-                            // Fusionner les données chargées avec l'état par défaut
-                            const loadedState = saved;
-                            state = { ...state, ...loadedState };
-                        } catch (e) {
-                            console.error("Erreur lors du chargement des données Firebase. L'état par défaut sera utilisé.", e);
-                        }
-                    }
+       function loadData() {
+    // On vérifie qu'on a bien un userId avant de lancer la requête
+    if (!userId) {
+        console.warn("Pas d'ID utilisateur, chargement annulé.");
+        return Promise.resolve(); 
+    }
+
+    const yearPath = state.currentYearId || "2024-2025"; // Sécurité si l'année n'est pas définie
+
+    return db.ref('classeurData/' + userId + '/' + yearPath).once('value')
+        .then((snapshot) => {
+            const data = snapshot.val(); // On récupère les données
+            
+            if (data) {
+                // Si des données existent, on met à jour l'état
+                state = { ...state, ...data };
+                console.log("Données chargées pour l'année : " + yearPath);
+            } else {
+                console.log("Aucune donnée trouvée pour cette année, utilisation de l'état par défaut.");
+                // On peut ici initialiser des classes par défaut si besoin
+            }
+            return true;
+        })
+        .catch((error) => {
+            console.error("Erreur de chargement Firebase:", error);
+        });
+}
                     
                     // Code d'initialisation par défaut (si la base est vide)
                     if (!state.classes || !Array.isArray(state.classes) || state.classes.length === 0) {
