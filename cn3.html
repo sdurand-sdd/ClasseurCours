@@ -606,10 +606,30 @@
     // Écouteur d'état de connexion
 firebase.auth().onAuthStateChanged((user) => {
     if (user) {
+        const monEmailPerso = "sophie.durand@free.fr";
+
+        // On vérifie si l'email de la personne connectée est DIFFERENT du vôtre
+        if (user.email !== monEmailPerso) { 
+            // Si ce n'est PAS Sophie Durand (donc si c'est profcollege@gmail.com)
+            alert("Accès réservé à l'administrateur.");
+            window.location.href = "page-suivi-eleves.html";
+            return; // INDISPENSABLE : pour ne pas exécuter la suite du code
+        }
+
+        // Si on arrive ici, c'est que user.email === monEmailPerso
         // 1. L'utilisateur vient de se connecter
         userId = user.uid;
-        console.log("Connecté :", userId);
-
+        console.log("Connecté en tant qu'admin :", userId);
+        
+        // 2. On charge les données automatiquement
+        loadData().then(() => {
+            renderCalendar();
+        });
+    } else {
+        // Personne n'est connecté, on renvoie vers le login
+        window.location.href = "login.html";
+    }
+});
         // 2. On charge les données automatiquement
         loadData().then(() => {
             renderCalendar(); // Affiche le calendrier une fois les données reçues
