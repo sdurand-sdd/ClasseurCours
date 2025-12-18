@@ -615,7 +615,7 @@ firebase.auth().onAuthStateChanged((user) => {
             window.location.href = "https://sdurand-sdd.github.io/Suivi-classe/suiviclasse.html";
             return; // INDISPENSABLE : pour ne pas exécuter la suite du code
         }
-
+    }
         // Si on arrive ici, c'est que user.email === monEmailPerso
         // 1. L'utilisateur vient de se connecter
         userId = user.uid;
