@@ -1188,33 +1188,36 @@ function saveCourse() {
             document.getElementById('notesModal').classList.remove('active');
             currentEditingWeek = null;
         }
-
-      function saveWeekNotes() {
+function saveWeekNotes() {
     if (!currentEditingWeek) return;
     
     const newNote = document.getElementById('weekNotes').value;
     
-    // 1. On met à jour localement
+    // 1. Mise à jour locale (immédiate sur l'écran)
     state.weekNotes[currentEditingWeek] = newNote;
 
-    // 2. On envoie à Firebase avec vérification
-    const user = auth.currentUser;
+    // 2. Envoi à Firebase avec la syntaxe v8
+    const user = firebase.auth().currentUser;
     if (user) {
-        // Chemin vers les notes de la semaine dans Firebase
-        const noteRef = ref(db, 'users/' + user.uid + '/weekNotes/' + currentEditingWeek);
-        
-        set(noteRef, newNote)
+        // Changement de la couleur du témoin si vous l'avez installé
+        if (typeof updateSyncUI === "function") updateSyncUI('syncing');
+
+        db.ref('users/' + user.uid + '/weekNotes/' + currentEditingWeek).set(newNote)
             .then(() => {
-                // Succès : on peut fermer
+                // Succès : on ferme et on rafraîchit
+                if (typeof updateSyncUI === "function") updateSyncUI('success');
                 renderCalendar();
                 document.getElementById('notesModal').classList.remove('active');
-                console.log("Note de semaine synchronisée !");
+                console.log("Note de semaine enregistrée !");
             })
             .catch((error) => {
-                // Échec : on prévient l'utilisateur
-                alert("⚠️ ERREUR DE SAUVEGARDE : Votre note n'a pas pu être envoyée au serveur. Vérifiez la connexion du collège.");
-                console.error(error);
+                // Échec : Problème de réseau
+                if (typeof updateSyncUI === "function") updateSyncUI('error');
+                alert("⚠️ ERREUR : La note n'a pas pu être envoyée. Gardez la fenêtre ouverte.");
+                console.error("Erreur Firebase :", error);
             });
+    } else {
+        alert("Erreur : Vous n'êtes pas connecté.");
     }
 }
         
