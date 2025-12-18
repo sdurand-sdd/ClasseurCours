@@ -1133,7 +1133,7 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
 function saveCourse() {
     if (!currentEditingCourse) return;
     
-    // 1. Récupération des données
+    // 1. On récupère les valeurs
     const sequenceIdx = document.getElementById('courseSequenceSelect').value;
     const level = document.getElementById('courseLevelSelect').value;
     let sequenceName = '';
@@ -1147,7 +1147,8 @@ function saveCourse() {
     const homework = document.getElementById('courseHomework').value;
     const sessionNum = parseInt(document.getElementById('courseSessionNum').value, 10) || 1;
     
-    const courseData = {
+    // 2. On met à jour l'objet global 'state'
+    state.courses[currentEditingCourse] = {
         date: document.getElementById('courseDate').value,
         sequence: sequenceName, 
         sessionNum: sessionNum, 
@@ -1156,25 +1157,17 @@ function saveCourse() {
         notes: document.getElementById('courseNotes').value
     };
 
-    // 2. Mise à jour locale
-    state.courses[currentEditingCourse] = courseData;
-
-    // 3. Sauvegarde Firebase (Syntaxe Version 8)
-    const user = firebase.auth().currentUser;
-    if (user) {
-        // On utilise la syntaxe db.ref().set() propre à votre version
-      // Au lieu de db.ref(...).set(courseData)
-// On utilise update pour fusionner les données
-db.ref('users/' + user.uid + '/courses').child(currentEditingCourse).update(courseData)
-    .then(() => {
-        console.log("Confirmé par Firebase !");
+    // 3. On appelle VOTRE fonction de sauvegarde qui marche
+    if (userId) {
+        // On affiche un message dans la console pour vérifier
+        console.log("Lancement de la sauvegarde globale via saveData...");
+        
+        // On exécute la sauvegarde
+        saveData(); 
+        
+        // On ferme et on rafraîchit l'affichage
         renderCalendar();
         closeCourseModal();
-    });
-            .catch((error) => {
-                alert("Erreur de réseau au collège : " + error.message);
-                console.error("Détail:", error);
-            });
     } else {
         alert("Vous n'êtes pas connecté !");
     }
