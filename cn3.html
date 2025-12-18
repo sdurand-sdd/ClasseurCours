@@ -409,6 +409,10 @@
                     </div>
                     
                     <div style="flex: 1;">
+                    <div id="syncStatus" style="display: inline-flex; align-items: center; margin-left: 15px; font-size: 0.85em; font-family: sans-serif; color: #666;">
+                        <span id="syncDot" style="width: 10px; height: 10px; background-color: #4caf50; border-radius: 50%; margin-right: 8px; display: inline-block;"></span>
+                        <span id="syncText">Données synchronisées</span>
+                    </div>
                         <label>Numéro Séance/Cours</label>
                         <input type="number" id="courseSessionNum" min="1" value="1" style="width: 100%;">
                     </div>
@@ -821,6 +825,22 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
                 });
             }
         }
+        // Code pour le témoin lumineux d'enregistrement des données sur firebase
+        function updateSyncUI(status) {
+    const dot = document.getElementById('syncDot');
+    const text = document.getElementById('syncText');
+    
+    if (status === 'syncing') {
+        dot.style.backgroundColor = '#ff9800'; // Orange
+        text.innerText = 'Synchronisation en cours...';
+    } else if (status === 'success') {
+        dot.style.backgroundColor = '#4caf50'; // Vert
+        text.innerText = 'Données synchronisées';
+    } else if (status === 'error') {
+        dot.style.backgroundColor = '#f44336'; // Rouge
+        text.innerText = 'Erreur de connexion !';
+    }
+}           
         // ------------------------------------------------------------------
             
             // Listener pour le formulaire de séquence
@@ -1110,9 +1130,10 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
             currentEditingCourse = null;
         }
 
-        function saveCourse() {
+     function saveCourse() {
     if (!currentEditingCourse) return;
     
+    // 1. On récupère les valeurs des champs (comme vous le faisiez déjà)
     const sequenceIdx = document.getElementById('courseSequenceSelect').value;
     const level = document.getElementById('courseLevelSelect').value;
     let sequenceName = '';
@@ -1128,7 +1149,7 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
     const sessionNumInput = document.getElementById('courseSessionNum');
     const sessionNum = sessionNumInput ? parseInt(sessionNumInput.value, 10) : 1;
     
-    // On prépare les données
+    // 2. On prépare l'objet avec les données du cours
     const courseData = {
         date: document.getElementById('courseDate').value,
         sequence: sequenceName, 
@@ -1138,28 +1159,27 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
         notes: document.getElementById('courseNotes').value
     };
 
-    // MISE À JOUR LOCALE
+    // 3. On met à jour la mémoire locale (pour que l'affichage soit immédiat)
     state.courses[currentEditingCourse] = courseData;
 
-    // SAUVEGARDE VERS FIREBASE AVEC VÉRIFICATION
+    // 4. On tente l'envoi vers Firebase
     const user = auth.currentUser;
     if (user) {
-        // On utilise la promesse renvoyée par set() ou update() dans votre fonction saveData
-        // Si votre fonction saveData ne renvoie rien, voici comment la sécuriser ici :
+        // On demande à Firebase d'enregistrer et on ATTEND sa réponse
         set(ref(db, 'users/' + user.uid + '/courses/' + currentEditingCourse), courseData)
             .then(() => {
-                // SEULEMENT SI ÇA RÉUSSIT :
-                renderCalendar();
-                closeCourseModal();
-                console.log("Sauvegarde réussie !");
+                // CE BLOC NE S'EXÉCUTE QUE SI LE SERVEUR DIT "OK"
+                console.log("Sauvegarde réussie sur Firebase !");
+                renderCalendar(); // On rafraîchit les couleurs du calendrier
+                closeCourseModal(); // On ferme la fenêtre seulement maintenant
             })
             .catch((error) => {
-                // SI ÇA ÉCHOUE (Réseau collège bloqué par exemple)
-                alert("ERREUR : Les données n'ont pas pu être envoyées au serveur. Ne fermez pas la page !");
-                console.error("Détail erreur :", error);
+                // CE BLOC S'EXÉCUTE SI LE RÉSEAU EST BLOQUÉ
+                alert("⚠️ ATTENTION : Impossible d'enregistrer sur le serveur (Réseau collège bloqué ?). Gardez cette fenêtre ouverte !");
+                console.error("Erreur : ", error);
             });
     } else {
-        alert("Vous n'êtes pas connecté !");
+        alert("Erreur : Vous n'êtes pas connecté.");
     }
 }
 
@@ -1175,15 +1195,35 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
             currentEditingWeek = null;
         }
 
-        function saveWeekNotes() {
-            if (!currentEditingWeek) return;
-            
-            state.weekNotes[currentEditingWeek] = document.getElementById('weekNotes').value;
-            
-            saveData();
-            renderCalendar();
-            closeNotesModal();
-        }
+      function saveWeekNotes() {
+    if (!currentEditingWeek) return;
+    
+    const newNote = document.getElementById('weekNotes').value;
+    
+    // 1. On met à jour localement
+    state.weekNotes[currentEditingWeek] = newNote;
+
+    // 2. On envoie à Firebase avec vérification
+    const user = auth.currentUser;
+    if (user) {
+        // Chemin vers les notes de la semaine dans Firebase
+        const noteRef = ref(db, 'users/' + user.uid + '/weekNotes/' + currentEditingWeek);
+        
+        set(noteRef, newNote)
+            .then(() => {
+                // Succès : on peut fermer
+                renderCalendar();
+                document.getElementById('notesModal').classList.remove('active');
+                console.log("Note de semaine synchronisée !");
+            })
+            .catch((error) => {
+                // Échec : on prévient l'utilisateur
+                alert("⚠️ ERREUR DE SAUVEGARDE : Votre note n'a pas pu être envoyée au serveur. Vérifiez la connexion du collège.");
+                console.error(error);
+            });
+    }
+}
+        
         
         // =========================================================
         // NOUVELLES FONCTIONS DE GESTION DES SÉQUENCES CENTRALISÉES
