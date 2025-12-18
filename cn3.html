@@ -626,11 +626,16 @@ firebase.auth().onAuthStateChanged((user) => {
         loadData().then(() => {
             renderCalendar();
         });
-    } else {
-        // Personne n'est connecté, on renvoie vers le login
-        window.location.href = "login.html";
+  } else {
+        // Personne n'est connecté
+        console.log("Utilisateur non connecté.");
+        
+        // On ne redirige QUE si on n'est pas déjà sur la page de login
+        // Remplacez 'login.html' par le nom RÉEL de votre fichier de connexion
+        if (!window.location.pathname.endsWith("cn3.html")) {
+            window.location.href = "cn3.html"; 
+        }
     }
-});
      
     // ... le reste des variables ...
         // =========================================================
