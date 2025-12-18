@@ -1130,59 +1130,53 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
             currentEditingCourse = null;
         }
 
-     function saveCourse() {
+function saveCourse() {
     if (!currentEditingCourse) return;
     
-    // 1. On récupère les valeurs des champs (comme vous le faisiez déjà)
+    // 1. Récupération des données
     const sequenceIdx = document.getElementById('courseSequenceSelect').value;
     const level = document.getElementById('courseLevelSelect').value;
     let sequenceName = '';
     
-    if (level && sequenceIdx !== '') {
-        const sequences = state.sequences[level] || [];
-        const sequence = sequences[sequenceIdx];
+    if (level && sequenceIdx !== '' && state.sequences[level]) {
+        const sequence = state.sequences[level][sequenceIdx];
         if (sequence) sequenceName = sequence.name;
     }
     
     const content = document.getElementById('courseContent').value;
     const homework = document.getElementById('courseHomework').value;
-    const sessionNumInput = document.getElementById('courseSessionNum');
-    const sessionNum = sessionNumInput ? parseInt(sessionNumInput.value, 10) : 1;
+    const sessionNum = parseInt(document.getElementById('courseSessionNum').value, 10) || 1;
     
-    // 2. On prépare l'objet avec les données du cours
     const courseData = {
         date: document.getElementById('courseDate').value,
         sequence: sequenceName, 
-        sessionNum: sessionNum > 0 ? sessionNum : 1, 
+        sessionNum: sessionNum, 
         content: content, 
         homework: homework, 
         notes: document.getElementById('courseNotes').value
     };
 
-    // 3. On met à jour la mémoire locale (pour que l'affichage soit immédiat)
+    // 2. Mise à jour locale
     state.courses[currentEditingCourse] = courseData;
 
-    // 4. On tente l'envoi vers Firebase
-    const user = auth.currentUser;
+    // 3. Sauvegarde Firebase (Syntaxe Version 8)
+    const user = firebase.auth().currentUser;
     if (user) {
-        // On demande à Firebase d'enregistrer et on ATTEND sa réponse
-        set(ref(db, 'users/' + user.uid + '/courses/' + currentEditingCourse), courseData)
+        // On utilise la syntaxe db.ref().set() propre à votre version
+        db.ref('users/' + user.uid + '/courses/' + currentEditingCourse).set(courseData)
             .then(() => {
-                // CE BLOC NE S'EXÉCUTE QUE SI LE SERVEUR DIT "OK"
-                console.log("Sauvegarde réussie sur Firebase !");
-                renderCalendar(); // On rafraîchit les couleurs du calendrier
-                closeCourseModal(); // On ferme la fenêtre seulement maintenant
+                console.log("Synchronisation réussie !");
+                renderCalendar();
+                closeCourseModal(); // La fenêtre se fermera ENFIN ici
             })
             .catch((error) => {
-                // CE BLOC S'EXÉCUTE SI LE RÉSEAU EST BLOQUÉ
-                alert("⚠️ ATTENTION : Impossible d'enregistrer sur le serveur (Réseau collège bloqué ?). Gardez cette fenêtre ouverte !");
-                console.error("Erreur : ", error);
+                alert("Erreur de réseau au collège : " + error.message);
+                console.error("Détail:", error);
             });
     } else {
-        alert("Erreur : Vous n'êtes pas connecté.");
+        alert("Vous n'êtes pas connecté !");
     }
 }
-
         function editWeekNotes(key, week) {
             currentEditingWeek = key;
             const notes = state.weekNotes[key] || '';
