@@ -1111,44 +1111,57 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
         }
 
         function saveCourse() {
-            if (!currentEditingCourse) return;
-            
-            const sequenceIdx = document.getElementById('courseSequenceSelect').value;
-            const level = document.getElementById('courseLevelSelect').value;
-            
-            let sequenceName = '';
-            
-            // Trouver le nom de la séquence
-            if (level && sequenceIdx !== '') {
-                const sequences = state.sequences[level] || [];
-                const sequence = sequences[sequenceIdx];
-                if (sequence) {
-                    sequenceName = sequence.name;
-                }
-            }
-            
-            // CORRECTION DU BUG D'ÉCRASEMENT: On prend la valeur exacte du champ (qui peut être "")
-            const content = document.getElementById('courseContent').value;
-            const homework = document.getElementById('courseHomework').value;
-            
-            // Récupération du numéro de séance/cours
-            const sessionNumInput = document.getElementById('courseSessionNum');
-            const sessionNum = sessionNumInput ? parseInt(sessionNumInput.value, 10) : 1;
-            
-            state.courses[currentEditingCourse] = {
-                date: document.getElementById('courseDate').value,
-                // On sauvegarde seulement le nom de la séquence et le numéro de séance
-                sequence: sequenceName, 
-                sessionNum: sessionNum > 0 ? sessionNum : 1, 
-                content: content, 
-                homework: homework, 
-                notes: document.getElementById('courseNotes').value
-            };
-            
-            saveData();
-            renderCalendar();
-            closeCourseModal();
-        }
+    if (!currentEditingCourse) return;
+    
+    const sequenceIdx = document.getElementById('courseSequenceSelect').value;
+    const level = document.getElementById('courseLevelSelect').value;
+    let sequenceName = '';
+    
+    if (level && sequenceIdx !== '') {
+        const sequences = state.sequences[level] || [];
+        const sequence = sequences[sequenceIdx];
+        if (sequence) sequenceName = sequence.name;
+    }
+    
+    const content = document.getElementById('courseContent').value;
+    const homework = document.getElementById('courseHomework').value;
+    const sessionNumInput = document.getElementById('courseSessionNum');
+    const sessionNum = sessionNumInput ? parseInt(sessionNumInput.value, 10) : 1;
+    
+    // On prépare les données
+    const courseData = {
+        date: document.getElementById('courseDate').value,
+        sequence: sequenceName, 
+        sessionNum: sessionNum > 0 ? sessionNum : 1, 
+        content: content, 
+        homework: homework, 
+        notes: document.getElementById('courseNotes').value
+    };
+
+    // MISE À JOUR LOCALE
+    state.courses[currentEditingCourse] = courseData;
+
+    // SAUVEGARDE VERS FIREBASE AVEC VÉRIFICATION
+    const user = auth.currentUser;
+    if (user) {
+        // On utilise la promesse renvoyée par set() ou update() dans votre fonction saveData
+        // Si votre fonction saveData ne renvoie rien, voici comment la sécuriser ici :
+        set(ref(db, 'users/' + user.uid + '/courses/' + currentEditingCourse), courseData)
+            .then(() => {
+                // SEULEMENT SI ÇA RÉUSSIT :
+                renderCalendar();
+                closeCourseModal();
+                console.log("Sauvegarde réussie !");
+            })
+            .catch((error) => {
+                // SI ÇA ÉCHOUE (Réseau collège bloqué par exemple)
+                alert("ERREUR : Les données n'ont pas pu être envoyées au serveur. Ne fermez pas la page !");
+                console.error("Détail erreur :", error);
+            });
+    } else {
+        alert("Vous n'êtes pas connecté !");
+    }
+}
 
         function editWeekNotes(key, week) {
             currentEditingWeek = key;
