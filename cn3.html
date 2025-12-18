@@ -1163,13 +1163,14 @@ function saveCourse() {
     const user = firebase.auth().currentUser;
     if (user) {
         // On utilise la syntaxe db.ref().set() propre à votre version
-        console.log("Tentative d'enregistrement sur :", 'users/' + user.uid + '/courses/' + currentEditingCourse);
-        db.ref('users/' + user.uid + '/courses/' + currentEditingCourse).set(courseData)
-            .then(() => {
-                console.log("Synchronisation réussie !");
-                renderCalendar();
-                closeCourseModal(); // La fenêtre se fermera ENFIN ici
-            })
+      // Au lieu de db.ref(...).set(courseData)
+// On utilise update pour fusionner les données
+db.ref('users/' + user.uid + '/courses').child(currentEditingCourse).update(courseData)
+    .then(() => {
+        console.log("Confirmé par Firebase !");
+        renderCalendar();
+        closeCourseModal();
+    });
             .catch((error) => {
                 alert("Erreur de réseau au collège : " + error.message);
                 console.error("Détail:", error);
