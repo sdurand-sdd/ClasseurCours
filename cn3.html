@@ -612,7 +612,7 @@ firebase.auth().onAuthStateChanged((user) => {
         if (user.email !== monEmailPerso) { 
             // Si ce n'est PAS Sophie Durand (donc si c'est profcollege@gmail.com)
             alert("Accès réservé à l'administrateur.");
-            window.location.href = "page-suivi-eleves.html";
+            window.location.href = "https://sdurand-sdd.github.io/Suivi-classe/suiviclasse.html";
             return; // INDISPENSABLE : pour ne pas exécuter la suite du code
         }
 
