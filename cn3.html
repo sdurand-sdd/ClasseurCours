@@ -603,7 +603,24 @@
     // Ancien : const userId = "mon_utilisateur";
     // NOUVEAU : Le userId est géré par l'événement de connexion/déconnexion
     let userId = null; 
-    
+    // Écouteur d'état de connexion
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        // 1. L'utilisateur vient de se connecter
+        userId = user.uid;
+        console.log("Connecté :", userId);
+
+        // 2. On charge les données automatiquement
+        loadData().then(() => {
+            renderCalendar(); // Affiche le calendrier une fois les données reçues
+        });
+    } else {
+        // 3. L'utilisateur est déconnecté
+        userId = null;
+        console.log("Déconnecté");
+        // Optionnel : afficher un message ou cacher le calendrier
+    }
+});
     // ... le reste des variables ...
         // =========================================================
         // FIN Configuration Firebase
