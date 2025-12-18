@@ -1201,36 +1201,17 @@ function saveCourse() {
             currentEditingWeek = null;
         }
 function saveWeekNotes() {
-    if (!currentEditingWeek) return;
+    if (!currentEditingWeek || !userId) return;
     
-    const newNote = document.getElementById('weekNotes').value;
-    
-    // 1. Mise à jour locale (immédiate sur l'écran)
-    state.weekNotes[currentEditingWeek] = newNote;
+    // 1. On met à jour le texte dans l'objet global
+    state.weekNotes[currentEditingWeek] = document.getElementById('weekNotes').value;
 
-    // 2. Envoi à Firebase avec la syntaxe v8
-    const user = firebase.auth().currentUser;
-    if (user) {
-        // Changement de la couleur du témoin si vous l'avez installé
-        if (typeof updateSyncUI === "function") updateSyncUI('syncing');
+    // 2. On utilise votre fonction globale qui marche
+    saveData(); 
 
-        db.ref('users/' + user.uid + '/weekNotes/' + currentEditingWeek).set(newNote)
-            .then(() => {
-                // Succès : on ferme et on rafraîchit
-                if (typeof updateSyncUI === "function") updateSyncUI('success');
-                renderCalendar();
-                document.getElementById('notesModal').classList.remove('active');
-                console.log("Note de semaine enregistrée !");
-            })
-            .catch((error) => {
-                // Échec : Problème de réseau
-                if (typeof updateSyncUI === "function") updateSyncUI('error');
-                alert("⚠️ ERREUR : La note n'a pas pu être envoyée. Gardez la fenêtre ouverte.");
-                console.error("Erreur Firebase :", error);
-            });
-    } else {
-        alert("Erreur : Vous n'êtes pas connecté.");
-    }
+    // 3. On ferme la fenêtre
+    renderCalendar();
+    document.getElementById('notesModal').classList.remove('active');
 }
         
         
