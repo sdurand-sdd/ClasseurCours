@@ -610,29 +610,29 @@ firebase.auth().onAuthStateChanged((user) => {
         const monEmailPerso = "sophie.durand@free.fr";
 
         if (user.email.toLowerCase() !== monEmailPerso.toLowerCase()) {
-            // Si c'est le compte profcollege, on le déconnecte
-            // et on le renvoie vers LEUR page (sur un autre site/url)
-            alert("Accès réservé. Redirection vers votre espace...");
+            console.log("Compte enseignant détecté. Déconnexion forcée pour permettre l'accès admin.");
+            
+            // On déconnecte le compte générique
             firebase.auth().signOut().then(() => {
-                window.location.href = "https://sdurand-sdd.github.io/Suivi-classe/suiviclasse.html";
+                // Une fois déconnecté, on reste sur la page de connexion
+                // pour que VOUS puissiez taper vos propres identifiants
+                alert("Compte non autorisé pour cet outil. Veuillez vous connecter avec votre compte administrateur.");
+                // On s'assure que le formulaire de login est visible
+                document.getElementById('login-section').style.display = 'block';
+                document.getElementById('calendar-section').style.display = 'none';
             });
             return;
         }
 
-        // C'est vous !
-        console.log("Bienvenue Sophie");
+        // Si c'est bien VOUS
+        console.log("Accès Admin accordé");
         userId = user.uid;
-        
-        // On masque le formulaire de login et on montre le calendrier
         document.getElementById('login-section').style.display = 'none';
         document.getElementById('calendar-section').style.display = 'block';
-
         loadData().then(() => { renderCalendar(); });
 
     } else {
-        // Personne n'est connecté : on montre le formulaire de login
-        // et on cache le calendrier
-        console.log("En attente de connexion...");
+        // Personne n'est connecté
         document.getElementById('login-section').style.display = 'block';
         document.getElementById('calendar-section').style.display = 'none';
     }
