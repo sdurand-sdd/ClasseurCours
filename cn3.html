@@ -631,17 +631,7 @@ firebase.auth().onAuthStateChanged((user) => {
         window.location.href = "login.html";
     }
 });
-        // 2. On charge les données automatiquement
-        loadData().then(() => {
-            renderCalendar(); // Affiche le calendrier une fois les données reçues
-        });
-     else {
-        // 3. L'utilisateur est déconnecté
-        userId = null;
-        console.log("Déconnecté");
-        // Optionnel : afficher un message ou cacher le calendrier
-    }
-});
+     
     // ... le reste des variables ...
         // =========================================================
         // FIN Configuration Firebase
