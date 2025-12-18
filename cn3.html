@@ -1163,6 +1163,7 @@ function saveCourse() {
     const user = firebase.auth().currentUser;
     if (user) {
         // On utilise la syntaxe db.ref().set() propre à votre version
+        console.log("Tentative d'enregistrement sur :", 'users/' + user.uid + '/courses/' + currentEditingCourse);
         db.ref('users/' + user.uid + '/courses/' + currentEditingCourse).set(courseData)
             .then(() => {
                 console.log("Synchronisation réussie !");
