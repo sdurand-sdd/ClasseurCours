@@ -609,33 +609,34 @@ firebase.auth().onAuthStateChanged((user) => {
     if (user) {
         const monEmailPerso = "sophie.durand@free.fr";
 
-        // On vérifie si l'email de la personne connectée est DIFFERENT du vôtre
-        if (user.email !== monEmailPerso) { 
-            // Si ce n'est PAS Sophie Durand (donc si c'est profcollege@gmail.com)
-            alert("Accès réservé à l'administrateur.");
-            window.location.href = "https://sdurand-sdd.github.io/Suivi-classe/suiviclasse.html";
-            return; // INDISPENSABLE : pour ne pas exécuter la suite du code
+        if (user.email.toLowerCase() !== monEmailPerso.toLowerCase()) {
+            // Si c'est le compte profcollege, on le déconnecte
+            // et on le renvoie vers LEUR page (sur un autre site/url)
+            alert("Accès réservé. Redirection vers votre espace...");
+            firebase.auth().signOut().then(() => {
+                window.location.href = "https://sdurand-sdd.github.io/Suivi-classe/suiviclasse.html";
+            });
+            return;
         }
 
-        // Si on arrive ici, c'est que user.email === monEmailPerso
-        // 1. L'utilisateur vient de se connecter
+        // C'est vous !
+        console.log("Bienvenue Sophie");
         userId = user.uid;
-        console.log("Connecté en tant qu'admin :", userId);
         
-        // 2. On charge les données automatiquement
-        loadData().then(() => {
-            renderCalendar();
-        });
-  } else {
-        // Personne n'est connecté
-        console.log("Utilisateur non connecté.");
-        
-        // On ne redirige QUE si on n'est pas déjà sur la page de login
-        // Remplacez 'login.html' par le nom RÉEL de votre fichier de connexion
-        if (!window.location.pathname.endsWith("cn3.html")) {
-            window.location.href = "cn3.html"; 
-        }
+        // On masque le formulaire de login et on montre le calendrier
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('calendar-section').style.display = 'block';
+
+        loadData().then(() => { renderCalendar(); });
+
+    } else {
+        // Personne n'est connecté : on montre le formulaire de login
+        // et on cache le calendrier
+        console.log("En attente de connexion...");
+        document.getElementById('login-section').style.display = 'block';
+        document.getElementById('calendar-section').style.display = 'none';
     }
+});
      
     // ... le reste des variables ...
         // =========================================================
