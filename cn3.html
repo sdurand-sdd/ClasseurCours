@@ -980,29 +980,37 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
             }
         }
 
-        function renderCourseSlot(week, slotNum, globalNum) {
-            const key = `${state.currentClass}-W${week}-C${slotNum}`;
-            const course = state.courses[key] || {}; 
+   function renderCourseSlot(week, slotNum, globalNum) {
+    const key = `${state.currentClass}-W${week}-C${slotNum}`;
+    const course = state.courses[key] || {}; 
+    
+    let sequenceDisplay = '';
+    if (course.sequence) {
+        sequenceDisplay = `<strong>Séquence:</strong> ${course.sequence}`;
+        if (course.sessionNum > 0) {
+            sequenceDisplay += ` (Séance ${course.sessionNum})`;
+        }
+    }
+    
+    return `
+        <div class="course-slot" onclick="editCourse('${key}', ${week}, ${slotNum}, ${globalNum})">
+            <h4>Cours ${globalNum}</h4>
+            ${course.date ? `<div class="course-date">📅 ${formatDate(course.date)}</div>` : '<div class="course-date">⚠️ Date non définie</div>'}
             
-            let sequenceDisplay = '';
-            if (course.sequence) {
-                sequenceDisplay = `<strong>Séquence:</strong> ${course.sequence}`;
-                if (course.sessionNum > 0) {
-                    sequenceDisplay += ` (Séance ${course.sessionNum})`;
-                }
+            ${sequenceDisplay ? `<div class="course-content">${sequenceDisplay}</div>` : ''} 
+            
+            ${course.content ? 
+                `<div class="course-content" style="max-height: 80px; overflow: hidden; border-left: 2px solid #007bff; padding-left: 5px;">
+                    ${course.content}
+                </div>` 
+                : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'
             }
             
-            return `
-                <div class="course-slot" onclick="editCourse('${key}', ${week}, ${slotNum}, ${globalNum})">
-                    <h4>Cours ${globalNum}</h4>
-                    ${course.date ? `<div class="course-date">📅 ${formatDate(course.date)}</div>` : '<div class="course-date">⚠️ Date non définie</div>'}
-                    ${sequenceDisplay ? `<div class="course-content">${sequenceDisplay}</div>` : ''} 
-                    ${course.content ? `<div class="course-content">${truncate(course.content, 100)}</div>` : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'}
-                    ${course.homework ? `<div class="course-homework"><strong>📝 À faire:</strong> ${truncate(course.homework, 80)}</div>` : ''}
-                    ${course.notes ? `<div class="course-notes"><strong>💭 Notes:</strong> ${truncate(course.notes, 80)}</div>` : ''}
-                </div>
-            `;
-        }
+            ${course.homework ? `<div class="course-homework"><strong>📝 À faire:</strong> ${truncate(course.homework, 80)}</div>` : ''}
+            ${course.notes ? `<div class="course-notes"><strong>💭 Notes:</strong> ${truncate(course.notes, 80)}</div>` : ''}
+        </div>
+    `;
+}
 
         function renderNotesSlot(week) {
             const key = `${state.currentClass}-W${week}-NOTES`;
