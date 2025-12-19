@@ -332,22 +332,15 @@
 }
 
 .toolbar button {
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 3px;
-    padding: 4px 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 32px;
+    background-color: #ffffff !important; /* Force le fond blanc */
+    color: #333333 !important;            /* Force le texte en gris foncé/noir */
+    border: 1px solid #ced4da;
+    font-weight: bold;                     /* Rend les lettres B, I, U plus visibles */
 }
 
 .toolbar button:hover {
-    background: #e9ecef;
-    border-color: #adb5bd;
+    background-color: #e9ecef !important; /* Un léger gris au survol */
+    color: #000000 !important;            /* Texte bien noir au survol */
 }
 
 .toolbar input[type="color"] {
