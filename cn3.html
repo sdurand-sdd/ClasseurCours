@@ -1231,49 +1231,29 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
         // =========================================================
         // FONCTIONS D'ÉDITION ET DE SAUVEGARDE DE COURS
         // =========================================================
+function editCourse(course) {
+    // 1. Vérification des éléments existants (pour éviter le crash)
+    const elDate = document.getElementById('courseDate');
+    const elContent = document.getElementById('courseContent');
+    const elHomework = document.getElementById('courseHomework');
+    const elNotes = document.getElementById('courseNotes');
+    const elSession = document.getElementById('courseSessionNum');
 
-        function editCourse(key, week, slotNum, globalNum) {
-            currentEditingCourse = key;
-            const course = state.courses[key] || {};
-console.log("Date:", document.getElementById('courseDate'), "Content:", document.getElementById('courseContent'));            
-            document.getElementById('courseDate').value = course.date || '';
-            document.getElementById('courseNotes').value = course.notes || '';
-            
-            // Si le cours a déjà des valeurs sauvegardées, les utiliser
-            document.getElementById('courseHomework').innerHTML = course.homework || '';
-            document.getElementById('courseSessionNum').value = course.sessionNum || 1;
-            
-            // 1. Déterminer le Niveau actuel de la classe 
-            const currentClassId = state.currentClass;
-            const currentLevel = currentClassId.split('-')[0]; // Ex: '3-3' -> '3'
+    // 2. On ne remplit QUE si l'élément a été trouvé dans la page
+    if (elDate)    elDate.value = course.date || '';
+    if (elNotes)   elNotes.value = course.notes || '';
+    if (elSession) elSession.value = course.sessionNum || 1;
 
-            // 2. Initialiser la sélection de Niveau
-            renderCourseLevelSelect(currentLevel);
-            
-            // 3. Initialiser les sélections de Séquence et Séance si elles sont déjà dans le cours
-            if (course.sequence) {
-                // Trouver l'index de la séquence sauvegardée
-                const sequenceArray = state.sequences[currentLevel] || [];
-                const sequence = sequenceArray.find(s => s.name === course.sequence);
-                
-                if (sequence) {
-                    const sequenceIdx = sequenceArray.indexOf(sequence);
-                    
-                    // On simule une sélection pour pré-remplir les autres listes
-                    document.getElementById('courseLevelSelect').value = currentLevel;
-                    renderCourseSequenceSelect(course.sequence); 
-                    document.getElementById('courseSequenceSelect').value = sequenceIdx; 
-                    
-                    // Sélectionne la séance
-                    renderCourseSessionSelect(course.sessionNum);
-                }
-            } else {
-                // Si aucune séquence n'est sauvegardée, initialiser la liste des séquences du niveau
-                renderCourseSequenceSelect(); 
-            }
-            
-            document.getElementById('courseModal').classList.add('active');
-        }
+    // 3. Cas spécial pour les DIVs éditables (Text Riche)
+    if (elContent)  elContent.innerHTML = course.content || '';
+    if (elHomework) elHomework.innerHTML = course.homework || '';
+
+    // 4. Affichage de la modale (vérifiez si votre ID est bien 'courseModal')
+    const modal = document.getElementById('courseModal');
+    if (modal) modal.style.display = 'block';
+}
+    
+       
 
         function closeCourseModal() {
             document.getElementById('courseModal').classList.remove('active');
