@@ -383,6 +383,39 @@
 .course-content b, .course-content strong { font-weight: bold; }
 .course-content i, .course-content em { font-style: italic; }
 .course-content u { text-decoration: underline; }
+
+.number-control {
+    display: flex;
+    align-items: center;
+    gap: 0; /* On les colle pour un effet bloc */
+}
+
+.number-control input {
+    text-align: center;
+    width: 60px !important;
+    border-radius: 0 !important; /* On enlève les arrondis internes */
+    margin: 0 !important;
+}
+
+.btn-step {
+    background: #f1f3f4;
+    border: 1px solid #ced4da;
+    width: 40px;
+    height: 38px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.btn-step:hover {
+    background: #e8eaed;
+}
+
+/* On arrondit seulement les bords extérieurs du groupe */
+.btn-step:first-child { border-radius: 4px 0 0 4px; }
+.btn-step:last-child { border-radius: 0 4px 4px 0; }
+        
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
