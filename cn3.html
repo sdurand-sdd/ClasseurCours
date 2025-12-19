@@ -874,11 +874,11 @@ async function changeYear(newYearId) {
 // GESTION DE L'ÉTAT DE CONNEXION
 // =========================================================
 
-function handleAuthStateChange(user) {
+/*function handleAuthStateChange(user) {
     const authSection = document.getElementById('auth-section');
     const appSection = document.getElementById('app-section');
 
-    if (user) {
+   if (user) {
         // 1. UTILISATEUR CONNECTÉ
         userId = user.uid; // Utilise l'UID unique de l'utilisateur comme chemin
         authSection.style.display = 'none'; // Masquer la connexion
@@ -894,7 +894,7 @@ function handleAuthStateChange(user) {
         if (appSection) appSection.style.display = 'none';   // Masquer l'application
         console.log("Utilisateur déconnecté");
     }
-}// <--- Ne pas oublier cette accolade de fin !
+}// <--- Ne pas oublier cette accolade de fin ! */
     
         // Initialiser l'interface de l'application
         init(); 
@@ -1766,7 +1766,30 @@ function resetData() {
     // =========================================================
 // AUTHENTIFICATION
 // =========================================================
+function handleAuthStateChange(user) {
+    const authSection = document.getElementById('auth-section');
+    const appSection = document.getElementById('app-section');
 
+    if (user) {
+        // L'utilisateur est connecté
+        userId = user.uid;
+        console.log("Connecté en tant que :", user.email);
+        
+        if (authSection) authSection.style.display = 'none';
+        if (appSection) appSection.style.display = 'block';
+
+        loadData(); // Charge les cours de l'utilisateur
+        if (typeof init === "function") init(); 
+    } else {
+        // L'utilisateur est déconnecté
+        userId = null;
+        console.log("Utilisateur non détecté.");
+        
+        if (authSection) authSection.style.display = 'block';
+        if (appSection) appSection.style.display = 'none';
+    }
+}
+        
 function signIn() {
     const email = document.getElementById('auth-email').value;
     const password = document.getElementById('auth-password').value;
