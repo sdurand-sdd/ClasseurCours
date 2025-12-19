@@ -1214,6 +1214,13 @@ function saveCourse() {
         const sequence = state.sequences[level][sequenceIdx];
         if (sequence) sequenceName = sequence.name;
     }
+    // --- 1. RÉCUPÉRATION ET PROTECTION DU CONTENU ---
+    let content = document.getElementById('courseContent').innerHTML;
+    
+    // Si la zone est vide ou contient juste un saut de ligne "fantôme", on nettoie
+    if (content === "<br>" || content === "<div><br></div>" || content.trim() === "") {
+        content = "";
+    }
     
     const content = document.getElementById('courseContent').innerHTML;
     const homework = document.getElementById('courseHomework').value;
