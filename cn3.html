@@ -1800,6 +1800,19 @@ function truncate(str, n) {
     if (!str) return '';
     return (str.length > n) ? str.substr(0, n - 1) + '...' : str;
 }
+
+    // =========================================================
+// INITIALISATION AU DÉMARRAGE
+// =========================================================
+
+// Cette partie dit au navigateur : "Dès que tu as fini de dessiner la page, 
+// vérifie la connexion Firebase"
+document.addEventListener('DOMContentLoaded', () => {
+    // On écoute les changements d'état (Connexion / Déconnexion)
+    auth.onAuthStateChanged(user => {
+        handleAuthStateChange(user);
+    });
+});
     </script>
 
 </body>
