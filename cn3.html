@@ -502,14 +502,16 @@
          style="border: 1px solid #ccc; min-height: 150px; padding: 10px; background: white; border-radius: 0 0 4px 4px; overflow-y: auto;">
     </div>
 </div>
-                <div class="form-group">
-                    <label>Travail à faire</label>
-                    <textarea id="courseHomework" rows="4" placeholder="Devoirs, exercices..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Notes personnelles</label>
-                    <textarea id="courseNotes" rows="4" placeholder="Remarques, observations..."></textarea>
-                </div>
+              <div class="form-group">
+    <label>Travail à faire :</label>
+    <div class="toolbar">
+        <button type="button" onclick="execCmd('bold')"><b>B</b></button>
+        <button type="button" onclick="execCmd('italic')"><i>I</i></button>
+        <button type="button" onclick="execCmd('underline')"><u>U</u></button>
+        <input type="color" onchange="execCmd('foreColor', this.value)" title="Couleur du texte">
+    </div>
+    <div id="courseHomework" contenteditable="true" class="rich-editor"></div>
+</div>
                 
                 <div style="text-align: right; margin-top: 15px;">
                     <button type="submit" class="save-btn" style="width: 100%;">
@@ -1070,7 +1072,7 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
                 : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'
             }
             
-            ${course.homework ? `<div class="course-homework"><strong>📝 À faire:</strong> ${truncate(course.homework, 80)}</div>` : ''}
+            ${course.homework ? `<div class="course-homework"><strong>📝 À faire:</strong> ${course.homework}</div>` : ''}
             ${course.notes ? `<div class="course-notes"><strong>💭 Notes:</strong> ${truncate(course.notes, 80)}</div>` : ''}
         </div>
     `;
@@ -1234,7 +1236,7 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
             document.getElementById('courseNotes').value = course.notes || '';
             
             // Si le cours a déjà des valeurs sauvegardées, les utiliser
-            document.getElementById('courseHomework').value = course.homework || '';
+            document.getElementById('courseHomework').innerHTML = course.homework || '';
             document.getElementById('courseSessionNum').value = course.sessionNum || 1;
             
             // 1. Déterminer le Niveau actuel de la classe 
@@ -1294,7 +1296,11 @@ function saveCourse() {
         content = "";
     }
     
-    const homework = document.getElementById('courseHomework').value;
+    const homework = document.getElementById('courseHomework').innerHTML;
+    // Sécurité contre les balises vides
+    if (homework === "<br>" || homework === "<div><br></div>" || homework.trim() === "") {
+    homework = "";
+}
     const sessionNum = parseInt(document.getElementById('courseSessionNum').value, 10) || 1;
     
     // 2. On met à jour l'objet global 'state'
