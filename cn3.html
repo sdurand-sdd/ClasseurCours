@@ -638,7 +638,10 @@ firebase.auth().onAuthStateChanged((user) => {
         // Si c'est bien VOUS
         console.log("Accès Admin accordé");
         userId = user.uid;
-        document.getElementById('login-section').style.display = 'none';
+        const loginSection = document.getElementById('login-section');
+if (loginSection) {
+    loginSection.style.display = 'none';
+}
         document.getElementById('calendar-section').style.display = 'block';
         loadData().then(() => { renderCalendar(); });
 
