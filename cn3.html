@@ -1235,7 +1235,7 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
         function editCourse(key, week, slotNum, globalNum) {
             currentEditingCourse = key;
             const course = state.courses[key] || {};
-            
+console.log("Date:", document.getElementById('courseDate'), "Content:", document.getElementById('courseContent'));            
             document.getElementById('courseDate').value = course.date || '';
             document.getElementById('courseNotes').value = course.notes || '';
             
