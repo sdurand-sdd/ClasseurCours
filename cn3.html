@@ -477,8 +477,14 @@
                         <span id="syncDot" style="width: 10px; height: 10px; background-color: #4caf50; border-radius: 50%; margin-right: 8px; display: inline-block;"></span>
                         <span id="syncText">Données synchronisées</span>
                     </div>
-                        <label>Numéro Séance/Cours</label>
-                        <input type="number" id="courseSessionNum" min="1" value="1" style="width: 100%;">
+                       <div class="form-group">
+    <label>Numéro Séance/Cours :</label>
+    <div class="number-control">
+        <button type="button" class="btn-step" onclick="this.nextElementSibling.stepDown()">-</button>
+        <input type="number" id="courseSessionNum" value="1" min="1">
+        <button type="button" class="btn-step" onclick="this.previousElementSibling.stepUp()">+</button>
+    </div>
+</div>
                     </div>
                 </div>
 
