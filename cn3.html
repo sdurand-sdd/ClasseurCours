@@ -1800,7 +1800,15 @@ function truncate(str, n) {
     if (!str) return '';
     return (str.length > n) ? str.substr(0, n - 1) + '...' : str;
 }
+// Votre fonction actuelle
+function signOutUser() {
+    auth.signOut();
+}
 
+// On ajoute ce "pont" au cas où votre bouton HTML cherche "logout"
+function logout() {
+    signOutUser();
+}
     // =========================================================
 // INITIALISATION AU DÉMARRAGE
 // =========================================================
