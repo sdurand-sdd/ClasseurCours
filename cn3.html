@@ -899,16 +899,7 @@ function handleAuthStateChange(user) {
         // Initialiser l'interface de l'application
         init(); 
 
-    } else {
-        // 2. UTILISATEUR DÉCONNECTÉ
-        userId = null;
-        authSection.style.display = 'block'; // Afficher la connexion
-        appSection.style.display = 'none'; // Masquer l'application
-        console.log("Utilisateur déconnecté.");
-    }
-}
-
-// L'écouteur Firebase qui surveille la connexion/déconnexion
+   // L'écouteur Firebase qui surveille la connexion/déconnexion
 auth.onAuthStateChanged(handleAuthStateChange);
         // ------------------------------------------------------------------
 
