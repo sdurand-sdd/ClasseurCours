@@ -1093,23 +1093,41 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
             });
         }
         
-        function applySessionContent() {
-            const level = document.getElementById('courseLevelSelect').value;
-            const sequenceIdx = document.getElementById('courseSequenceSelect').value;
-            const sessionNum = document.getElementById('courseSessionSelect').value;
+       function applySessionContent() {
+    const level = document.getElementById('courseLevelSelect').value;
+    const sequenceIdx = document.getElementById('courseSequenceSelect').value;
+    const sessionNum = document.getElementById('courseSessionSelect').value;
 
-            if (!level || sequenceIdx === '' || !sessionNum) return;
-            
-            const sequence = state.sequences[level][sequenceIdx];
-            const session = sequence.sessions.find(s => s.sessionNum == sessionNum);
-            
-            if (session) {
-                // Pré-remplir les champs
-                document.getElementById('courseContent').value = session.content;
-                document.getElementById('courseHomework').value = session.homework;
+    if (!level || sequenceIdx === '' || !sessionNum) return;
+    
+    const sequence = state.sequences[level][sequenceIdx];
+    const session = sequence.sessions.find(s => s.sessionNum == sessionNum);
+    
+    if (session) {
+        const contentField = document.getElementById('courseContent');
+        const homeworkField = document.getElementById('courseHomework');
+
+        // --- PROTECTION ---
+        // On vérifie si les champs contiennent déjà quelque chose
+        const hasContent = contentField.value.trim() !== "";
+        const hasHomework = homeworkField.value.trim() !== "";
+
+        if (hasContent || hasHomework) {
+            // Si ce n'est pas vide, on demande confirmation avant d'écraser
+            const confirmOverwrite = confirm("Cette séance contient déjà du texte. Voulez-vous remplacer votre saisie par le contenu type de la séquence ?");
+            if (!confirmOverwrite) {
+                // Si l'utilisateur refuse, on met quand même à jour le numéro de séance (utile)
                 document.getElementById('courseSessionNum').value = session.sessionNum;
+                return; // On s'arrête là, on ne touche pas au texte
             }
         }
+
+        // Si c'est vide OU si l'utilisateur a dit OK : on remplit
+        contentField.value = session.content || "";
+        homeworkField.value = session.homework || "";
+        document.getElementById('courseSessionNum').value = session.sessionNum;
+    }
+}
         
         // =========================================================
         // FONCTIONS D'ÉDITION ET DE SAUVEGARDE DE COURS
