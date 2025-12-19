@@ -716,44 +716,8 @@
         
     // NOUVEAU : Initialisation de l'Auth
         const auth = firebase.auth(); 
-    
-    // Ancien : const userId = "mon_utilisateur";
-    // NOUVEAU : Le userId est géré par l'événement de connexion/déconnexion
-    let userId = null; 
-    // Écouteur d'état de connexion
-firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        const monEmailPerso = "sophie.durand@free.fr";
-
-        if (user.email.toLowerCase() !== monEmailPerso.toLowerCase()) {
-            console.log("Compte enseignant détecté. Déconnexion forcée pour permettre l'accès admin.");
-            
-            // On déconnecte le compte générique
-            firebase.auth().signOut().then(() => {
-                // Une fois déconnecté, on reste sur la page de connexion
-                // pour que VOUS puissiez taper vos propres identifiants
-                alert("Compte non autorisé pour cet outil. Veuillez vous connecter avec votre compte administrateur.");
-                // On s'assure que le formulaire de login est visible
-                document.getElementById('auth-section').style.display = 'block';
-                document.getElementById('calendar-section').style.display = 'none';
-            });
-            return;
-        }
-
-        // Si c'est bien VOUS
-        console.log("Accès Admin accordé");
-        userId = user.uid;
-        document.getElementById('auth-section').style.display = 'none';
-        document.getElementById('calendar-section').style.display = 'block';
-        loadData().then(() => { renderCalendar(); });
-
-    } else {
-        // Personne n'est connecté
-        document.getElementById('auth-section').style.display = 'block';
-        document.getElementById('calendar-section').style.display = 'none';
-    }
-});
-     
+        let userId = null; 
+      
     // ... le reste des variables ...
         // =========================================================
         // FIN Configuration Firebase
