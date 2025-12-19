@@ -886,7 +886,15 @@ function handleAuthStateChange(user) {
 
         loadData(); // Charger les données de cet utilisateur spécifique
         console.log("Utilisateur connecté :", user.email, "UID:", userId);
-        
+
+        } else {
+        // 2. UTILISATEUR DÉCONNECTÉ
+        userId = null;
+        if (authSection) authSection.style.display = 'block'; // Réafficher la connexion
+        if (appSection) appSection.style.display = 'none';   // Masquer l'application
+        console.log("Utilisateur déconnecté");
+    }
+} // <--- Ne pas oublier cette accolade de fin !
         // Initialiser l'interface de l'application
         init(); 
 
@@ -1244,7 +1252,8 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
         // --- PROTECTION ---
         // On vérifie si les champs contiennent déjà quelque chose
         const hasContent = contentField.innerHTML.trim() !== "";
-        const hasHomework = homeworkField.value.trim() !== "";
+        // On regarde si le contenu HTML (sans les espaces) n'est pas vide
+        const hasHomework = homeworkField.innerHTML.trim() !== "" && homeworkField.innerHTML !== "<br>";
 
         if (hasContent || hasHomework) {
             // Si ce n'est pas vide, on demande confirmation avant d'écraser
@@ -1257,8 +1266,8 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
         }
 
         // Si c'est vide OU si l'utilisateur a dit OK : on remplit
-        contentField.value = session.content || "";
-        homeworkField.value = session.homework || "";
+        contentField.innerHTML = session.content || "";
+        homeworkField.innerHTML = session.homework || "";
         document.getElementById('courseSessionNum').value = session.sessionNum;
     }
 }
