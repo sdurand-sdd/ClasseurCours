@@ -1234,42 +1234,36 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
         // =========================================================
 function editCourse(key, week, slotNum, globalNum) {
     console.log("Clic détecté pour la clé :", key);
+    
+    // 1. On stocke la clé pour la sauvegarde future
+    currentEditingKey = key;
 
-    // 1. Récupérer les données du cours depuis l'état global
-    // Si le cours n'existe pas encore, on crée un objet vide
+    // 2. On récupère les données
     const course = state.courses[key] || {};
 
-    // 2. Récupérer les éléments de la fenêtre modale
+    // 3. On remplit les éléments (Sécurisé avec des IF)
     const elDate = document.getElementById('courseDate');
     const elContent = document.getElementById('courseContent');
     const elHomework = document.getElementById('courseHomework');
     const elNotes = document.getElementById('courseNotes');
     const elSession = document.getElementById('courseSessionNum');
 
-    // 3. Remplir les champs
-    if (elDate)    elDate.value = course.date || '';
-    if (elNotes)   elNotes.value = course.notes || '';
+    if (elDate) elDate.value = course.date || '';
+    if (elNotes) elNotes.value = course.notes || '';
     if (elSession) elSession.value = course.sessionNum || 1;
-
-    // 4. Cas spécial pour les DIVs éditables (Text Riche)
-    if (elContent)  elContent.innerHTML = course.content || '';
+    
+    // Remplissage du texte riche
+    if (elContent) elContent.innerHTML = course.content || '';
     if (elHomework) elHomework.innerHTML = course.homework || '';
 
-    // 5. Stocker la clé actuelle dans une variable globale ou un attribut 
-    // pour savoir QUOI enregistrer plus tard
-    currentEditingKey = key; 
-
-    // 6. Afficher la fenêtre modale
-    // ... (votre code précédent de remplissage des champs)
-
-    // TEST D'AFFICHAGE
+    // 4. OUVERTURE DE LA MODALE
     const modal = document.getElementById('courseModal');
     if (modal) {
-        console.log("Fenêtre modale trouvée ! Affichage en cours...");
-        modal.style.display = 'block';
-        modal.style.zIndex = "10001"; // On s'assure qu'elle passe au dessus de tout
+        console.log("Tentative d'affichage de courseModal...");
+        modal.style.display = 'block'; // On affiche
+        modal.classList.add('active'); // Parfois utilisé par certains frameworks CSS
     } else {
-        console.error("ERREUR : L'élément 'courseModal' n'existe pas dans le HTML.");
+        console.error("ERREUR : L'élément avec l'ID 'courseModal' est introuvable !");
     }
 }
 
