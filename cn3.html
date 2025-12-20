@@ -1267,10 +1267,21 @@ function editCourse(key, week, slotNum, globalNum) {
     }
 }
 
-        function closeCourseModal() {
-            document.getElementById('courseModal').classList.remove('active');
-            currentEditingCourse = null;
-        }
+       function closeCourseModal() {
+    const modal = document.getElementById('courseModal');
+    if (modal) {
+        // 1. On cache physiquement la fenêtre
+        modal.style.display = 'none'; 
+        
+        // 2. On retire la classe active (au cas où votre CSS l'utilise)
+        modal.classList.remove('active');
+    }
+    
+    // 3. On remet la variable de suivi à vide
+    currentEditingKey = null; 
+    
+    console.log("Fenêtre fermée et prête pour le prochain clic.");
+}
 
 function saveCourse() {
     if (!currentEditingCourse) return;
