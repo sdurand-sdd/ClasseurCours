@@ -147,15 +147,36 @@
             font-style: italic;
         }
 
-        .course-content, .course-homework, .course-notes {
-            font-size: 0.9em;
-            color: #343a40;
-            margin-top: 3px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+     /* Style commun pour la propreté */
+.course-content, .course-homework, .course-notes {
+    font-size: 0.85em; /* Légèrement plus petit pour la grille */
+    color: #343a40;
+    margin-top: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+}
+
+/* Spécifique au Contenu (on autorise 3 lignes au lieu de 2) */
+.course-content {
+    -webkit-line-clamp: 3; 
+    border-left: 3px solid #007bff; /* Votre trait bleu distinctif */
+    padding-left: 6px;
+    background: #fdfdfd;
+}
+
+/* Spécifique aux Devoirs (2 lignes suffisent) */
+.course-homework {
+    -webkit-line-clamp: 2;
+    color: #d9534f; /* Une couleur un peu plus "alerte" pour les devoirs */
+}
+
+/* Pour que les balises HTML (gras/italique) ne cassent pas l'alignement */
+.course-content strong, .course-homework strong {
+    font-weight: 700;
+    color: #212529;
+}
         }
         
         /* Modal Styles */
