@@ -1260,11 +1260,16 @@ function editCourse(key, week, slotNum, globalNum) {
     currentEditingKey = key; 
 
     // 6. Afficher la fenêtre modale
+    // ... (votre code précédent de remplissage des champs)
+
+    // TEST D'AFFICHAGE
     const modal = document.getElementById('courseModal');
     if (modal) {
+        console.log("Fenêtre modale trouvée ! Affichage en cours...");
         modal.style.display = 'block';
+        modal.style.zIndex = "10001"; // On s'assure qu'elle passe au dessus de tout
     } else {
-        console.error("La modale 'courseModal' est introuvable !");
+        console.error("ERREUR : L'élément 'courseModal' n'existe pas dans le HTML.");
     }
 }
 
