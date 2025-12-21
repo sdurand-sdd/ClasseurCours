@@ -185,7 +185,7 @@
 .modal {
     display: none !important; 
     position: fixed !important;
-    z-index: 10000 !important;
+    z-index: 9999 !important;
     left: 0;
     top: 0;
     width: 100%;
@@ -581,14 +581,18 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Notes de la semaine</h2>
-                <button class="close-btn" onclick="closeNotesModal()">Fermer</button>
+               <button type="button" class="save-btn" style="width: 100%;" onclick="saveCourse()">
+    💾 Enregistrer
+</button>
             </div>
             <form id="notesForm">
                 <div class="form-group">
                     <label for="weekNotes">Notes personnelles pour cette semaine :</label>
                     <textarea id="weekNotes" rows="8"></textarea>
                 </div>
-                <button type="submit" class="save-btn">💾 Enregistrer les notes</button>
+             <button type="button" class="save-btn" onclick="saveWeekNotes()">
+    💾 Enregistrer les notes
+</button>
             </form>
         </div>
     </div>
