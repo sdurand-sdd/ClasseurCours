@@ -441,10 +441,18 @@
     </div>
 
                 
-                <div class="form-group">
-                    <label>Travail à faire</label>
-                    <textarea id="courseHomework" rows="4" placeholder="Devoirs, exercices..."></textarea>
-                </div>
+              <div class="form-group">
+    <label>Travail à faire</label>
+    <div class="toolbar" style="background: #f8f9fa; padding: 5px; border: 1px solid #ddd; border-bottom: none; display: flex; gap: 8px;">
+        <button type="button" onclick="formatDoc('bold', null, 'courseHomework')"><b>B</b></button>
+        <button type="button" onclick="formatDoc('italic', null, 'courseHomework')"><i>I</i></button>
+        <input type="color" onchange="formatDoc('foreColor', this.value, 'courseHomework')">
+    </div>
+    <div id="courseHomework" 
+         contenteditable="true" 
+         style="border: 1px solid #ddd; min-height: 80px; padding: 10px; background: white; border-radius: 0 0 4px 4px; outline: none;">
+    </div>
+</div>
                 <div class="form-group">
                     <label>Notes personnelles</label>
                     <textarea id="courseNotes" rows="4" placeholder="Remarques, observations..."></textarea>
@@ -1679,6 +1687,7 @@ function truncate(str, n) {
 
 </body>
 </html>
+
 
 
 
