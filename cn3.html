@@ -1301,15 +1301,15 @@ function editCourse(key, week, slotNum, globalNum) {
 }
 
 function saveCourse() {
-    // On utilise bien la clé 'Key' que nous avons définie dans editCourse
+    // Vérification de la clé de session
     if (!currentEditingKey) {
         console.error("Erreur : Aucune clé de cours trouvée pour la sauvegarde.");
         return;
     }
     
-    const currentId = currentEditingKey; // On crée un alias pour simplifier
-    
-    // 1. On récupère les valeurs
+    const currentId = currentEditingKey; // On utilise la clé identifiée au clic
+
+    // 1. Récupération des valeurs de séquence
     const sequenceIdx = document.getElementById('courseSequenceSelect').value;
     const level = document.getElementById('courseLevelSelect').value;
     let sequenceName = '';
@@ -1318,23 +1318,22 @@ function saveCourse() {
         const sequence = state.sequences[level][sequenceIdx];
         if (sequence) sequenceName = sequence.name;
     }
-    // --- 1. RÉCUPÉRATION ET PROTECTION DU CONTENU ---
+
+    // --- 2. RÉCUPÉRATION ET NETTOYAGE DU CONTENU RICHE ---
     let content = document.getElementById('courseContent').innerHTML;
-    
-    // Si la zone est vide ou contient juste un saut de ligne "fantôme", on nettoie
     if (content === "<br>" || content === "<div><br></div>" || content.trim() === "") {
         content = "";
     }
     
-    const homework = document.getElementById('courseHomework').innerHTML;
-    // Sécurité contre les balises vides
+    let homework = document.getElementById('courseHomework').innerHTML;
     if (homework === "<br>" || homework === "<div><br></div>" || homework.trim() === "") {
-    homework = "";
-}
+        homework = "";
+    }
+
     const sessionNum = parseInt(document.getElementById('courseSessionNum').value, 10) || 1;
     
-    // 2. On met à jour l'objet global 'state'
-    state.courses[currentEditingCourse] = {
+    // 3. MISE À JOUR DE L'OBJET GLOBAL (Utilisation de currentId ici)
+    state.courses[currentId] = {
         date: document.getElementById('courseDate').value,
         sequence: sequenceName, 
         sessionNum: sessionNum, 
@@ -1343,15 +1342,14 @@ function saveCourse() {
         notes: document.getElementById('courseNotes').value
     };
 
-    // 3. On appelle VOTRE fonction de sauvegarde qui marche
+    // 4. SAUVEGARDE ET FERMETURE
     if (userId) {
-        // On affiche un message dans la console pour vérifier
-        console.log("Lancement de la sauvegarde globale via saveData...");
+        console.log("Sauvegarde en cours pour :", currentId);
         
-        // On exécute la sauvegarde
+        // Exécute la sauvegarde vers Firebase
         saveData(); 
         
-        // On ferme et on rafraîchit l'affichage
+        // Rafraîchit l'interface et ferme la fenêtre
         renderCalendar();
         closeCourseModal();
     } else {
