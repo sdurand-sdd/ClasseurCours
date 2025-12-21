@@ -592,98 +592,99 @@
 
     
     <script>
-        // =========================================================
-        // Configuration Firebase (Vérifiez la ligne databaseURL)
-        // =========================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyA4BpxaadwjKgiJH3rwOdk3WaJ9m5G9qqw",
-            authDomain: "suivi-classe-4eme.firebaseapp.com",
-            projectId: "suivi-classe-4eme",
-            storageBucket: "suivi-classe-4eme.firebasestorage.app",
-            messagingSenderId: "1088897454236",
-            appId: "1:1088897454236:web:273a6ddf50ab9c0b605d59",
-            // LIGNE CRUCIALE : L'URL corrigée
-            databaseURL: "https://suivi-classe-4eme-default-rtdb.europe-west1.firebasedatabase.app" 
-        };
-        
-        // Initialiser Firebase si ce n'est pas déjà fait
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.database();
-        
-    // NOUVEAU : Initialisation de l'Auth
-        const auth = firebase.auth(); 
+// =========================================================
+// Configuration Firebase (Vérifiez la ligne databaseURL)
+// =========================================================
+const firebaseConfig = {
+    apiKey: "AIzaSyA4BpxaadwjKgiJH3rwOdk3WaJ9m5G9qqw",
+    authDomain: "suivi-classe-4eme.firebaseapp.com",
+    projectId: "suivi-classe-4eme",
+    storageBucket: "suivi-classe-4eme.firebasestorage.app",
+    messagingSenderId: "1088897454236",
+    appId: "1:1088897454236:web:273a6ddf50ab9c0b605d59",
+    databaseURL: "https://suivi-classe-4eme-default-rtdb.europe-west1.firebasedatabase.app" 
+};
+
+// Initialiser Firebase si ce n'est pas déjà fait
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+const auth = firebase.auth(); 
+
+let userId = null; 
+
+// ✅ SOLUTION : Attendre que le DOM soit chargé
+document.addEventListener('DOMContentLoaded', () => {
     
-    // Ancien : const userId = "mon_utilisateur";
-    // NOUVEAU : Le userId est géré par l'événement de connexion/déconnexion
-    let userId = null; 
     // Écouteur d'état de connexion
-firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        const monEmailPerso = "sophie.durand@free.fr";
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            const monEmailPerso = "sophie.durand@free.fr";
 
-        if (user.email.toLowerCase() !== monEmailPerso.toLowerCase()) {
-            console.log("Compte enseignant détecté. Déconnexion forcée pour permettre l'accès admin.");
+            if (user.email.toLowerCase() !== monEmailPerso.toLowerCase()) {
+                console.log("Compte enseignant détecté. Déconnexion forcée pour permettre l'accès admin.");
+                
+                firebase.auth().signOut().then(() => {
+                    alert("Compte non autorisé pour cet outil. Veuillez vous connecter avec votre compte administrateur.");
+                    
+                    // ✅ Ces éléments existent maintenant
+                    const authSection = document.getElementById('auth-section');
+                    const calendarSection = document.getElementById('calendar-section');
+                    
+                    if (authSection) authSection.style.display = 'block';
+                    if (calendarSection) calendarSection.style.display = 'none';
+                });
+                return;
+            }
+
+            // Si c'est bien VOUS
+            console.log("Accès Admin accordé");
+            userId = user.uid;
+            console.log(`Utilisateur connecté : ${user.email} UID: ${userId}`);
             
-            // On déconnecte le compte générique
-            firebase.auth().signOut().then(() => {
-                // Une fois déconnecté, on reste sur la page de connexion
-                // pour que VOUS puissiez taper vos propres identifiants
-                alert("Compte non autorisé pour cet outil. Veuillez vous connecter avec votre compte administrateur.");
-                // On s'assure que le formulaire de login est visible
-                document.getElementById('auth-section').style.display = 'block';
-                document.getElementById('calendar-section').style.display = 'none';
-            });
-            return;
+            // ✅ Vérification avant manipulation
+            const authSection = document.getElementById('auth-section');
+            const calendarSection = document.getElementById('calendar-section');
+            
+            if (authSection) authSection.style.display = 'none';
+            if (calendarSection) calendarSection.style.display = 'block';
+            
+            loadData().then(() => { renderCalendar(); });
+
+        } else {
+            // Personne n'est connecté
+            console.warn("Utilisateur non détecté.");
+            
+            const authSection = document.getElementById('auth-section');
+            const calendarSection = document.getElementById('calendar-section');
+            
+            if (authSection) authSection.style.display = 'block';
+            if (calendarSection) calendarSection.style.display = 'none';
         }
+    });
+    
+}); // Fin du DOMContentLoaded
 
-        // Si c'est bien VOUS
-        console.log("Accès Admin accordé");
-        userId = user.uid;
-        document.getElementById('auth-section').style.display = 'none';
-        document.getElementById('calendar-section').style.display = 'block';
-        loadData().then(() => { renderCalendar(); });
+// =========================================================
+// État de l'application
+// =========================================================
+let state = {
+    currentYearId: '2025-2026',
+    currentClass: '',
+    currentPeriod: 1,
+    classes: [],
+    courses: {},
+    weekNotes: {},
+    sequences: {}
+};
 
-    } else {
-        // Personne n'est connecté
-        document.getElementById('auth-section').style.display = 'block';
-        document.getElementById('calendar-section').style.display = 'none';
-    }
-});
-     
-    // ... le reste des variables ...
-        // =========================================================
-        // FIN Configuration Firebase
-        // =========================================================
-        
-        // État de l'application
-        // ... le reste de votre état actuel ...
-        // État de l'application
-        let state = {
-            currentYearId: '2025-2026', // <-- On ajoute cette ligne par défaut
-            currentClass: '',
-            currentPeriod: 1,
-            classes: [],
-            courses: {},
-            weekNotes: {},
-            // state.sequences stocke maintenant les séquences par NIVEAU, pour le catalogue centralisé
-            sequences: {} // Exemple: { '3': [seq1, seq2], '4': [seq3] }
-        };
+let currentEditingCourse = null;
+let currentEditingWeek = null;
+let currentEditingSequenceIndex = null;
+let currentEditingLevel = null;
+let tempSessions = [];
 
-        let currentEditingCourse = null; // Key du cours actuel en édition
-        let currentEditingWeek = null;
-        
-        // Variables pour la gestion des séquences
-        let currentEditingSequenceIndex = null; // Index de la séquence en cours d'édition
-        let currentEditingLevel = null; // Niveau de la séquence en cours d'édition
-        let tempSessions = []; // Structure temporaire pour l'édition d'une nouvelle séquence/séance
-
-
-        // Charger les données depuis le stockage
-      // ------------------------------------------------------------------
-        // NOUVELLE FONCTION : Charger les données depuis Firebase
-        // ------------------------------------------------------------------
 // --- FONCTION DE SAUVEGARDE ---
 function saveData() {
     if (!userId) return;
@@ -712,7 +713,6 @@ function loadData() {
             const data = snapshot.val();
             
             if (data) {
-                // Fusion des données
                 state = { ...state, ...data };
                 console.log("Données chargées !");
             } else {
@@ -728,7 +728,6 @@ function loadData() {
                 saveData(); 
             }
 
-            // Sécurités
             if (!state.currentClass && state.classes && state.classes.length > 0) {
                 state.currentClass = state.classes[0].id;
             }
@@ -738,8 +737,7 @@ function loadData() {
             console.error("Erreur Firebase :", error);
             return false;
         });
-} 
-// --- Après la fin de loadData ---
+}// --- Après la fin de loadData ---
 
 async function changeYear(newYearId) {
     // 1. On met à jour l'année dans l'état
@@ -1681,6 +1679,7 @@ function truncate(str, n) {
 
 </body>
 </html>
+
 
 
 
