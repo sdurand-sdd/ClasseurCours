@@ -632,7 +632,7 @@ firebase.auth().onAuthStateChanged((user) => {
                 // pour que VOUS puissiez taper vos propres identifiants
                 alert("Compte non autorisé pour cet outil. Veuillez vous connecter avec votre compte administrateur.");
                 // On s'assure que le formulaire de login est visible
-                document.getElementById('login-section').style.display = 'block';
+                document.getElementById('auth-section').style.display = 'block';
                 document.getElementById('calendar-section').style.display = 'none';
             });
             return;
@@ -641,13 +641,13 @@ firebase.auth().onAuthStateChanged((user) => {
         // Si c'est bien VOUS
         console.log("Accès Admin accordé");
         userId = user.uid;
-        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('auth-section').style.display = 'none';
         document.getElementById('calendar-section').style.display = 'block';
         loadData().then(() => { renderCalendar(); });
 
     } else {
         // Personne n'est connecté
-        document.getElementById('login-section').style.display = 'block';
+        document.getElementById('auth-section').style.display = 'block';
         document.getElementById('calendar-section').style.display = 'none';
     }
 });
@@ -1680,6 +1680,7 @@ function truncate(str, n) {
 
 </body>
 </html>
+
 
 
 
