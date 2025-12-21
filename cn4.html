@@ -990,29 +990,36 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
             }
         }
 
-        function renderCourseSlot(week, slotNum, globalNum) {
-            const key = `${state.currentClass}-W${week}-C${slotNum}`;
-            const course = state.courses[key] || {}; 
-            
-            let sequenceDisplay = '';
-            if (course.sequence) {
-                sequenceDisplay = `<strong>Séquence:</strong> ${course.sequence}`;
-                if (course.sessionNum > 0) {
-                    sequenceDisplay += ` (Séance ${course.sessionNum})`;
-                }
-            }
-            
-            return `
-                <div class="course-slot" onclick="editCourse('${key}', ${week}, ${slotNum}, ${globalNum})">
-                    <h4>Cours ${globalNum}</h4>
-                    ${course.date ? `<div class="course-date">📅 ${formatDate(course.date)}</div>` : '<div class="course-date">⚠️ Date non définie</div>'}
-                    ${sequenceDisplay ? `<div class="course-content">${sequenceDisplay}</div>` : ''} 
-                    ${course.content ? `<div class="course-content">${truncate(course.content.replace(/<[^>]*>?/gm, ''), 100)}</div>` : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'}
-                    ${course.homework ? `<div class="course-homework"><strong>📝 À faire:</strong> ${truncate(course.homework, 80)}</div>` : ''}
-                    ${course.notes ? `<div class="course-notes"><strong>💭 Notes:</strong> ${truncate(course.notes, 80)}</div>` : ''}
-                </div>
-            `;
+       function renderCourseSlot(week, slotNum, globalNum) {
+    const key = `${state.currentClass}-W${week}-C${slotNum}`;
+    const course = state.courses[key] || {}; 
+    
+    let sequenceDisplay = '';
+    if (course.sequence) {
+        sequenceDisplay = `<strong>Séquence:</strong> ${course.sequence}`;
+        if (course.sessionNum > 0) {
+            sequenceDisplay += ` (Séance ${course.sessionNum})`;
         }
+    }
+    
+    // On prépare les versions "texte brut" pour l'aperçu du calendrier
+    const cleanContent = course.content ? course.content.replace(/<[^>]*>?/gm, '') : '';
+    const cleanHomework = course.homework ? course.homework.replace(/<[^>]*>?/gm, '') : '';
+    
+    return `
+        <div class="course-slot" onclick="editCourse('${key}', ${week}, ${slotNum}, ${globalNum})">
+            <h4>Cours ${globalNum}</h4>
+            ${course.date ? `<div class="course-date">📅 ${formatDate(course.date)}</div>` : '<div class="course-date">⚠️ Date non définie</div>'}
+            ${sequenceDisplay ? `<div class="course-content">${sequenceDisplay}</div>` : ''} 
+            
+            ${course.content ? `<div class="course-content">${truncate(cleanContent, 100)}</div>` : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'}
+            
+            ${course.homework ? `<div class="course-homework"><strong>📝 À faire:</strong> ${truncate(cleanHomework, 80)}</div>` : ''}
+            
+            ${course.notes ? `<div class="course-notes"><strong>💭 Notes:</strong> ${truncate(course.notes, 80)}</div>` : ''}
+        </div>
+    `;
+}
 
         function renderNotesSlot(week) {
             const key = `${state.currentClass}-W${week}-NOTES`;
@@ -1696,6 +1703,7 @@ function truncate(str, n) {
 
 </body>
 </html>
+
 
 
 
