@@ -1163,7 +1163,7 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
             
             // Si le cours a déjà des valeurs sauvegardées, les utiliser
             document.getElementById('courseContent').innerHTML = course.content || '';
-            document.getElementById('courseHomework').value = course.homework || '';
+            document.getElementById('courseHomework').innerHTML = course.homework || '';
             document.getElementById('courseSessionNum').value = course.sessionNum || 1;
             
             // 1. Déterminer le Niveau actuel de la classe 
@@ -1696,6 +1696,7 @@ function truncate(str, n) {
 
 </body>
 </html>
+
 
 
 
