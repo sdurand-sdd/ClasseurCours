@@ -182,26 +182,26 @@
         /* Modal Styles */
        /* 1. Le conteneur (fond noir) */
 /* 1. Force la disparition de toutes les modales au chargement */
+/* --- BLOC MODAL CORRIGÉ --- */
 .modal {
     display: none !important; 
     position: fixed !important;
-    z-index: 9999 !important;
+    z-index: 10000 !important; /* Passe devant le calendrier */
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); /* Fond plus sombre pour bien voir */
+    background-color: rgba(0, 0, 0, 0.7) !important;
     overflow-y: auto;
-}
-
-/* 2. Force l'apparition uniquement quand la classe 'active' est ajoutée */
-.modal.active {
-    display: flex !important; /* Flexbox pour centrer */
-    align-items: center;
+    align-items: center; 
     justify-content: center;
 }
 
-/* 3. La boîte de dialogue elle-même */
+/* S'active uniquement via JavaScript */
+.modal.active {
+    display: flex !important;
+}
+
 .modal-content {
     background-color: #fff;
     padding: 25px;
@@ -210,8 +210,9 @@
     max-width: 700px;
     position: relative;
     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    margin: auto; /* Aide au centrage */
+    margin: auto;
 }
+/* -------------------------- */
 
         .modal-header {
             display: flex;
@@ -498,7 +499,7 @@
                 <h2>Éditer le cours</h2>
                 <button class="close-btn" onclick="closeCourseModal()">Fermer</button>
             </div>
-            <form id="courseForm">
+            <form id="courseForm" onsubmit="event.preventDefault(); return false;">
                 
                 <div class="form-group" style="display: flex; gap: 20px; align-items: flex-end;">
                     <div style="flex: 1;">
@@ -570,10 +571,11 @@
 </div>
                 
                 <div style="text-align: right; margin-top: 15px;">
-                    <button type="submit" class="save-btn" style="width: 100%;">
-                        💾 Enregistrer
-                    </button>
+    <button type="button" class="save-btn" style="width: 100%;" onclick="saveCourse()">
+        💾 Enregistrer le cours
+    </button>
                 </div>
+                
             </form>
         </div>
     </div>
@@ -1291,9 +1293,7 @@ function editCourse(key, week, slotNum, globalNum) {
        function closeCourseModal() {
     const modal = document.getElementById('courseModal');
     if (modal) {
-        // 1. On cache physiquement la fenêtre
-        modal.style.display = 'none'; 
-        
+                    
         // 2. On retire la classe active (au cas où votre CSS l'utilise)
         modal.classList.remove('active');
     }
@@ -1305,59 +1305,49 @@ function editCourse(key, week, slotNum, globalNum) {
 }
 
 function saveCourse() {
-    // Vérification de la clé de session
+    // 1. On récupère la clé du cours (currentEditingKey)
     if (!currentEditingKey) {
-        console.error("Erreur : Aucune clé de cours trouvée pour la sauvegarde.");
+        console.error("Aucune clé trouvée");
         return;
     }
-    
-    const currentId = currentEditingKey; // On utilise la clé identifiée au clic
 
-    // 1. Récupération des valeurs de séquence
-    const sequenceIdx = document.getElementById('courseSequenceSelect').value;
-    const level = document.getElementById('courseLevelSelect').value;
-    let sequenceName = '';
-    
-    if (level && sequenceIdx !== '' && state.sequences[level]) {
-        const sequence = state.sequences[level][sequenceIdx];
-        if (sequence) sequenceName = sequence.name;
-    }
-
-    // --- 2. RÉCUPÉRATION ET NETTOYAGE DU CONTENU RICHE ---
-    let content = document.getElementById('courseContent').innerHTML;
-    if (content === "<br>" || content === "<div><br></div>" || content.trim() === "") {
-        content = "";
-    }
-    
-    let homework = document.getElementById('courseHomework').innerHTML;
-    if (homework === "<br>" || homework === "<div><br></div>" || homework.trim() === "") {
-        homework = "";
-    }
-
-    const sessionNum = parseInt(document.getElementById('courseSessionNum').value, 10) || 1;
-    
-    // 3. MISE À JOUR DE L'OBJET GLOBAL (Utilisation de currentId ici)
-    state.courses[currentId] = {
-        date: document.getElementById('courseDate').value,
-        sequence: sequenceName, 
-        sessionNum: sessionNum, 
-        content: content, 
-        homework: homework, 
-        notes: document.getElementById('courseNotes').value
+    // 2. Récupération sécurisée des éléments pour éviter l'erreur "null"
+    const getVal = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.value : "";
     };
 
-    // 4. SAUVEGARDE ET FERMETURE
+    const getHTML = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.innerHTML : "";
+    };
+
+    // 3. On prépare l'objet de données
+    state.courses[currentEditingKey] = {
+        date: getVal('courseDate'),
+        sessionNum: parseInt(getVal('courseSessionNum')) || 1,
+        content: getHTML('courseContent'),
+        homework: getHTML('courseHomework'),
+        notes: getVal('courseNotes'),
+        // On récupère le nom de la séquence si sélectionnée
+        sequence: (function() {
+            const level = getVal('courseLevelSelect');
+            const idx = getVal('courseSequenceSelect');
+            if (level && idx !== "" && state.sequences[level]) {
+                return state.sequences[level][idx]?.name || "";
+            }
+            return "";
+        })()
+    };
+
+    // 4. On lance la sauvegarde réelle
     if (userId) {
-        console.log("Sauvegarde en cours pour :", currentId);
-        
-        // Exécute la sauvegarde vers Firebase
-        saveData(); 
-        
-        // Rafraîchit l'interface et ferme la fenêtre
-        renderCalendar();
-        closeCourseModal();
+        saveData(); // Votre fonction Firebase
+        renderCalendar(); // On rafraîchit la grille
+        closeCourseModal(); // On ferme la fenêtre
+        console.log("Sauvegarde réussie pour : " + currentEditingKey);
     } else {
-        alert("Vous n'êtes pas connecté !");
+        alert("Erreur : Utilisateur non connecté.");
     }
 }
         function editWeekNotes(key, week) {
