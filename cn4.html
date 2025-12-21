@@ -1676,17 +1676,27 @@ function truncate(str, n) {
     return (str.length > n) ? str.substr(0, n - 1) + '...' : str;
 }
     // Fonction pour que les boutons du texte enrichi fonctionne
-    function formatDoc(cmd, value = null) {
-    // Exécute la commande de mise en forme sur le texte sélectionné
-    document.execCommand(cmd, false, value);
-    // Garde le focus sur la zone de texte
-    document.getElementById('courseContent').focus();
+   function formatDoc(cmd, value = null, targetId = 'courseContent') {
+    // 1. On récupère l'élément cible (par défaut courseContent)
+    const target = document.getElementById(targetId);
+    
+    if (target) {
+        // 2. On force le curseur à aller dans cette zone
+        target.focus();
+        
+        // 3. On exécute la commande (Gras, Italique, Couleur, etc.)
+        document.execCommand(cmd, false, value);
+        
+        // 4. On garde le focus pour pouvoir continuer à taper immédiatement
+        target.focus();
+    }
 }
     
     </script>
 
 </body>
 </html>
+
 
 
 
