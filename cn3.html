@@ -488,27 +488,112 @@
         <div class="calendar-grid" id="calendarGrid">
             </div>
     </div>
-  
-    <div class="modal" id="notesModal">
+
+  <div class="modal" id="courseModal" hidden>
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Notes de la semaine</h2>
-               <button type="button" class="save-btn" style="width: 100%;" onclick="saveCourse()">
-    💾 Enregistrer
-</button>
+                <h2>Éditer le cours</h2>
+                <button class="close-btn" onclick="closeCourseModal()">Fermer</button>
             </div>
-            <form id="notesForm">
-                <div class="form-group">
-                    <label for="weekNotes">Notes personnelles pour cette semaine :</label>
-                    <textarea id="weekNotes" rows="8"></textarea>
+            <form id="courseForm" onsubmit="event.preventDefault(); return false;">
+                
+                <div class="form-group" style="display: flex; gap: 20px; align-items: flex-end;">
+                    <div style="flex: 1;">
+                        <label>Niveau Pédagogique</label>
+                        <select id="courseLevelSelect" onchange="renderCourseSequenceSelect()">
+                            <option value="">-- Niveau --</option>
+                            </select>
+                    </div>
+                    
+                    <div style="flex: 2;">
+                        <label>Séquence (Thème)</label>
+                        <select id="courseSequenceSelect" onchange="renderCourseSessionSelect()">
+                            <option value="">-- Séquence --</option>
+                        </select>
+                    </div>
+                    
+                    <div style="flex: 2;">
+                        <label>Séance Précise</label>
+                        <select id="courseSessionSelect" onchange="applySessionContent()">
+                            <option value="">-- Séance --</option>
+                        </select>
+                    </div>
+                    
+                    <div style="flex: 1;">
+                    <div id="syncStatus" style="display: inline-flex; align-items: center; margin-left: 15px; font-size: 0.85em; font-family: sans-serif; color: #666;">
+                        <span id="syncDot" style="width: 10px; height: 10px; background-color: #4caf50; border-radius: 50%; margin-right: 8px; display: inline-block;"></span>
+                        <span id="syncText">Données synchronisées</span>
+                    </div>
+                       <div class="form-group">
+    <label>Numéro Séance/Cours :</label>
+    <div class="number-control">
+        <button type="button" class="btn-step" onclick="this.nextElementSibling.stepDown()">-</button>
+        <input type="number" id="courseSessionNum" value="1" min="1">
+        <button type="button" class="btn-step" onclick="this.previousElementSibling.stepUp()">+</button>
+    </div>
+</div>
+                    </div>
                 </div>
-             <button type="button" class="save-btn" onclick="saveWeekNotes()">
-    💾 Enregistrer les notes
-</button>
+
+                <div class="form-group">
+                    <label>Date du cours</label>
+                    <input type="date" id="courseDate" required>
+                </div>
+                
+<div class="form-group">
+    <label>Contenu du cours</label>
+    
+    <div class="toolbar" style="background: #f1f1f1; padding: 5px; border: 1px solid #ccc; border-bottom: none; border-radius: 4px 4px 0 0; display: flex; gap: 5px;">
+        <button type="button" onclick="formatDoc('bold')" style="width: 30px; cursor: pointer;" title="Gras"><b>B</b></button>
+        <button type="button" onclick="formatDoc('italic')" style="width: 30px; cursor: pointer;" title="Italique"><i>I</i></button>
+        <button type="button" onclick="formatDoc('underline')" style="width: 30px; cursor: pointer;" title="Souligné"><u>U</u></button>
+        <input type="color" onchange="formatDoc('foreColor', this.value)" style="height: 24px; cursor: pointer;" title="Couleur du texte">
+    </div>
+
+    <div id="courseContent" 
+         contenteditable="true" 
+         style="border: 1px solid #ccc; min-height: 150px; padding: 10px; background: white; border-radius: 0 0 4px 4px; overflow-y: auto;">
+    </div>
+</div>
+              <div class="form-group">
+    <label>Travail à faire :</label>
+    <div class="toolbar">
+        <button type="button" onclick="execCmd('bold')"><b>B</b></button>
+        <button type="button" onclick="execCmd('italic')"><i>I</i></button>
+        <button type="button" onclick="execCmd('underline')"><u>U</u></button>
+        <input type="color" onchange="execCmd('foreColor', this.value)" title="Couleur du texte">
+    </div>
+    <div id="courseHomework" contenteditable="true" class="rich-editor"></div>
+</div>
+                
+                <div style="text-align: right; margin-top: 15px;">
+    <button type="button" class="save-btn" style="width: 100%;" onclick="saveCourse()">
+        💾 Enregistrer le cours
+    </button>
+                </div>
+    
+                
             </form>
         </div>
     </div>
-
+    
+     <div class="modal" id="notesModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Notes de la semaine</h2>
+            <button type="button" class="close-btn" onclick="closeNotesModal()">Fermer</button>
+        </div>
+        <form id="notesForm" onsubmit="event.preventDefault();">
+            <div class="form-group">
+                <label for="weekNotes">Notes personnelles pour cette semaine :</label>
+                <textarea id="weekNotes" rows="8" style="width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 10px;"></textarea>
+            </div>
+            <button type="button" class="save-btn" style="width: 100%;" onclick="saveWeekNotes()">
+                💾 Enregistrer les notes de la semaine
+            </button>
+        </form>
+    </div>
+</div>
     <div class="modal" id="classModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1741,95 +1826,6 @@ window.addEventListener('load', () => {
     });
 });
     </script>
-  <div class="modal" id="courseModal" hidden>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Éditer le cours</h2>
-                <button class="close-btn" onclick="closeCourseModal()">Fermer</button>
-            </div>
-            <form id="courseForm" onsubmit="event.preventDefault(); return false;">
-                
-                <div class="form-group" style="display: flex; gap: 20px; align-items: flex-end;">
-                    <div style="flex: 1;">
-                        <label>Niveau Pédagogique</label>
-                        <select id="courseLevelSelect" onchange="renderCourseSequenceSelect()">
-                            <option value="">-- Niveau --</option>
-                            </select>
-                    </div>
-                    
-                    <div style="flex: 2;">
-                        <label>Séquence (Thème)</label>
-                        <select id="courseSequenceSelect" onchange="renderCourseSessionSelect()">
-                            <option value="">-- Séquence --</option>
-                        </select>
-                    </div>
-                    
-                    <div style="flex: 2;">
-                        <label>Séance Précise</label>
-                        <select id="courseSessionSelect" onchange="applySessionContent()">
-                            <option value="">-- Séance --</option>
-                        </select>
-                    </div>
-                    
-                    <div style="flex: 1;">
-                    <div id="syncStatus" style="display: inline-flex; align-items: center; margin-left: 15px; font-size: 0.85em; font-family: sans-serif; color: #666;">
-                        <span id="syncDot" style="width: 10px; height: 10px; background-color: #4caf50; border-radius: 50%; margin-right: 8px; display: inline-block;"></span>
-                        <span id="syncText">Données synchronisées</span>
-                    </div>
-                       <div class="form-group">
-    <label>Numéro Séance/Cours :</label>
-    <div class="number-control">
-        <button type="button" class="btn-step" onclick="this.nextElementSibling.stepDown()">-</button>
-        <input type="number" id="courseSessionNum" value="1" min="1">
-        <button type="button" class="btn-step" onclick="this.previousElementSibling.stepUp()">+</button>
-    </div>
-</div>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <label>Date du cours</label>
-                    <input type="date" id="courseDate" required>
-                </div>
-                
-<div class="form-group">
-    <label>Contenu du cours</label>
-    
-    <div class="toolbar" style="background: #f1f1f1; padding: 5px; border: 1px solid #ccc; border-bottom: none; border-radius: 4px 4px 0 0; display: flex; gap: 5px;">
-        <button type="button" onclick="formatDoc('bold')" style="width: 30px; cursor: pointer;" title="Gras"><b>B</b></button>
-        <button type="button" onclick="formatDoc('italic')" style="width: 30px; cursor: pointer;" title="Italique"><i>I</i></button>
-        <button type="button" onclick="formatDoc('underline')" style="width: 30px; cursor: pointer;" title="Souligné"><u>U</u></button>
-        <input type="color" onchange="formatDoc('foreColor', this.value)" style="height: 24px; cursor: pointer;" title="Couleur du texte">
-    </div>
-
-    <div id="courseContent" 
-         contenteditable="true" 
-         style="border: 1px solid #ccc; min-height: 150px; padding: 10px; background: white; border-radius: 0 0 4px 4px; overflow-y: auto;">
-    </div>
-</div>
-              <div class="form-group">
-    <label>Travail à faire :</label>
-    <div class="toolbar">
-        <button type="button" onclick="execCmd('bold')"><b>B</b></button>
-        <button type="button" onclick="execCmd('italic')"><i>I</i></button>
-        <button type="button" onclick="execCmd('underline')"><u>U</u></button>
-        <input type="color" onchange="execCmd('foreColor', this.value)" title="Couleur du texte">
-    </div>
-    <div id="courseHomework" contenteditable="true" class="rich-editor"></div>
-</div>
-                
-                <div style="text-align: right; margin-top: 15px;">
-    <button type="button" class="save-btn" style="width: 100%;" onclick="saveCourse()">
-        💾 Enregistrer le cours
-    </button>
-                </div>
-    
-                
-            </form>
-        </div>
-    </div>
-    
-    
-    
 </body>
 </html>
