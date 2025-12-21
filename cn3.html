@@ -1305,7 +1305,13 @@ function editCourse(key, week, slotNum, globalNum) {
 }
 
 function saveCourse() {
-    if (!currentEditingCourse) return;
+    // On utilise bien la clé 'Key' que nous avons définie dans editCourse
+    if (!currentEditingKey) {
+        console.error("Erreur : Aucune clé de cours trouvée pour la sauvegarde.");
+        return;
+    }
+    
+    const currentId = currentEditingKey; // On crée un alias pour simplifier
     
     // 1. On récupère les valeurs
     const sequenceIdx = document.getElementById('courseSequenceSelect').value;
