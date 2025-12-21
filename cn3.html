@@ -1259,7 +1259,7 @@ function editCourse(key, week, slotNum, globalNum) {
     // 2. On récupère les données
     const course = state.courses[key] || {};
 
-    // 3. On remplit les éléments (Sécurisé avec des IF)
+    // 3. On remplit les éléments
     const elDate = document.getElementById('courseDate');
     const elContent = document.getElementById('courseContent');
     const elHomework = document.getElementById('courseHomework');
@@ -1270,24 +1270,22 @@ function editCourse(key, week, slotNum, globalNum) {
     if (elNotes) elNotes.value = course.notes || '';
     if (elSession) elSession.value = course.sessionNum || 1;
     
-    // Remplissage du texte riche
     if (elContent) elContent.innerHTML = course.content || '';
     if (elHomework) elHomework.innerHTML = course.homework || '';
 
     // 4. OUVERTURE DE LA MODALE
- const modal = document.getElementById('courseModal');
-if (modal) {
-    // 1. On nettoie tout style qui pourrait bloquer
-    modal.style.setProperty('display', 'flex', 'important'); 
-    
-    // 2. On ajoute la classe active
-    modal.classList.add('active');
-    
-    // 3. On s'assure qu'elle est visible
-    modal.style.visibility = 'visible';
-    modal.style.opacity = '1';
-}
-}
+    const modal = document.getElementById('courseModal');
+    if (modal) {
+        modal.style.setProperty('display', 'flex', 'important'); 
+        modal.classList.add('active');
+        modal.style.visibility = 'visible';
+        modal.style.opacity = '1';
+        modal.scrollTop = 0;
+    } else {
+        console.error("ERREUR : L'élément avec l'ID 'courseModal' est introuvable !");
+    }
+} // <--- C'EST CETTE ACCOLADE QUI MANQUAIT !
+
       function closeCourseModal() {
     const modal = document.getElementById('courseModal');
     if (modal) {
