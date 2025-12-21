@@ -185,36 +185,32 @@
 /* --- BLOC MODAL CORRIGÉ --- */
 /* Cache absolument tout au chargement */
 .modal {
-    /* 1. Caché par défaut avec une priorité maximale */
+    /* Cache la fenêtre de force */
     display: none !important; 
     
-    /* 2. Sort du flux de la page (ne s'affiche plus en bas) */
-    position: fixed !important;
+    /* Sort la fenêtre du flux (ne prend plus de place en bas) */
+    position: fixed !important; 
     
-    /* 3. Couvre tout l'écran */
+    /* Positionnement de sécurité */
     top: 0 !important;
     left: 0 !important;
     width: 100% !important;
     height: 100% !important;
     
-    /* 4. Passe devant tout (calendrier inclus) */
-    z-index: 999999 !important; 
+    /* Couleur de fond (le voile noir) */
+    background-color: rgba(0, 0, 0, 0.7) !important;
     
-    background-color: rgba(0, 0, 0, 0.75);
-    overflow-y: auto;
+    /* Passe au dessus de TOUT */
+    z-index: 99999 !important;
 }
 
-/* S'affiche seulement quand la fonction editCourse ajoute 'active' */
+/* Quand on clique, on passe en mode FLEX pour centrer */
 .modal.active {
-    display: flex !important;
+    display: flex !important; 
     align-items: center;
     justify-content: center;
 }
 
-/* Empêche les scrollings parasites derrière la fenêtre */
-body.modal-open {
-    overflow: hidden;
-}
 /* -------------------------- */
 
         .modal-header {
