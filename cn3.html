@@ -185,28 +185,25 @@
 /* --- BLOC MODAL CORRIGÉ --- */
 /* Cache absolument tout au chargement */
 .modal {
-    /* Cache la fenêtre de force */
     display: none !important; 
-    
-    /* Sort la fenêtre du flux (ne prend plus de place en bas) */
-    position: fixed !important; 
-    
-    /* Positionnement de sécurité */
+    position: fixed !important;
+    /* On force la position sur toute la surface de l'écran */
     top: 0 !important;
     left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
     width: 100% !important;
     height: 100% !important;
     
-    /* Couleur de fond (le voile noir) */
-    background-color: rgba(0, 0, 0, 0.7) !important;
+    /* Un z-index astronomique pour passer devant le calendrier */
+    z-index: 2147483647 !important; 
     
-    /* Passe au dessus de TOUT */
-    z-index: 99999 !important;
+    background-color: rgba(0, 0, 0, 0.8) !important; /* Voile noir plus sombre */
+    overflow-y: auto;
 }
 
-/* Quand on clique, on passe en mode FLEX pour centrer */
 .modal.active {
-    display: flex !important; 
+    display: flex !important;
     align-items: center;
     justify-content: center;
 }
