@@ -777,20 +777,26 @@ function handleAuthStateChange(user) {
     const appSection = document.getElementById('app-section');
 
     if (user) {
-        // L'utilisateur est connecté
-        if (authSection) authSection.style.display = 'none';
-        if (appSection) appSection.style.display = 'block';
+        // 1. UTILISATEUR CONNECTÉ
+        userId = user.uid; // Utilise l'UID unique de l'utilisateur comme chemin
+        authSection.style.display = 'none'; // Masquer la connexion
+        appSection.style.display = 'block'; // Afficher l'application
+
+        loadData(); // Charger les données de cet utilisateur spécifique
+        console.log("Utilisateur connecté :", user.email, "UID:", userId);
         
-        userId = user.uid;
-        loadData(); // On charge les données après la connexion
+        // Initialiser l'interface de l'application
+        init(); 
+
     } else {
-        // L'utilisateur est déconnecté
-        if (authSection) authSection.style.display = 'block';
-        if (appSection) appSection.style.display = 'none';
-        
+        // 2. UTILISATEUR DÉCONNECTÉ
         userId = null;
+        authSection.style.display = 'block'; // Afficher la connexion
+        appSection.style.display = 'none'; // Masquer l'application
+        console.log("Utilisateur déconnecté.");
     }
 }
+
 
 // L'écouteur Firebase qui surveille la connexion/déconnexion
 auth.onAuthStateChanged(handleAuthStateChange);
