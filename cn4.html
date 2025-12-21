@@ -1683,26 +1683,54 @@ function truncate(str, n) {
     return (str.length > n) ? str.substr(0, n - 1) + '...' : str;
 }
     // Fonction pour que les boutons du texte enrichi fonctionne
-   function formatDoc(cmd, value = null, targetId = 'courseContent') {
-    // 1. On récupère l'élément cible (par défaut courseContent)
+   // Fonction de formatage pour les éditeurs contenteditable
+function formatDoc(command, value = null, targetId = 'courseContent') {
+    // Obtenir l'élément cible
     const target = document.getElementById(targetId);
     
-    if (target) {
-        // 2. On force le curseur à aller dans cette zone
-        target.focus();
-        
-        // 3. On exécute la commande (Gras, Italique, Couleur, etc.)
-        document.execCommand(cmd, false, value);
-        
-        // 4. On garde le focus pour pouvoir continuer à taper immédiatement
-        target.focus();
+    if (!target) {
+        console.error('Élément cible introuvable:', targetId);
+        return;
+    }
+    
+    // Focus sur l'élément avant d'appliquer le formatage
+    target.focus();
+    
+    // Appliquer la commande de formatage
+    if (value) {
+        document.execCommand(command, false, value);
+    } else {
+        document.execCommand(command, false, null);
     }
 }
+
+// Fonction pour nettoyer le contenu placeholder au premier clic
+function clearPlaceholder(elementId) {
+    const element = document.getElementById(elementId);
+    if (element && element.textContent === 'Cliquez pour ajouter du contenu' || 
+        element.textContent === 'Cliquez pour ajouter du travail à faire') {
+        element.textContent = '';
+    }
+}
+
+// Ajouter des événements pour nettoyer le placeholder
+document.addEventListener('DOMContentLoaded', () => {
+    const courseContent = document.getElementById('courseContent');
+    const courseHomework = document.getElementById('courseHomework');
     
+    if (courseContent) {
+        courseContent.addEventListener('focus', () => clearPlaceholder('courseContent'));
+    }
+    
+    if (courseHomework) {
+        courseHomework.addEventListener('focus', () => clearPlaceholder('courseHomework'));
+    }
+});
     </script>
 
 </body>
 </html>
+
 
 
 
