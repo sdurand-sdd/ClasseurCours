@@ -777,23 +777,18 @@ function handleAuthStateChange(user) {
     const appSection = document.getElementById('app-section');
 
     if (user) {
-        // 1. UTILISATEUR CONNECTÉ
-        userId = user.uid; // Utilise l'UID unique de l'utilisateur comme chemin
-        authSection.style.display = 'none'; // Masquer la connexion
-        appSection.style.display = 'block'; // Afficher l'application
-
-        loadData(); // Charger les données de cet utilisateur spécifique
-        console.log("Utilisateur connecté :", user.email, "UID:", userId);
+        // L'utilisateur est connecté
+        if (authSection) authSection.style.display = 'none';
+        if (appSection) appSection.style.display = 'block';
         
-        // Initialiser l'interface de l'application
-        init(); 
-
+        userId = user.uid;
+        loadData(); // On charge les données après la connexion
     } else {
-        // 2. UTILISATEUR DÉCONNECTÉ
+        // L'utilisateur est déconnecté
+        if (authSection) authSection.style.display = 'block';
+        if (appSection) appSection.style.display = 'none';
+        
         userId = null;
-        authSection.style.display = 'block'; // Afficher la connexion
-        appSection.style.display = 'none'; // Masquer l'application
-        console.log("Utilisateur déconnecté.");
     }
 }
 
@@ -1680,6 +1675,7 @@ function truncate(str, n) {
 
 </body>
 </html>
+
 
 
 
