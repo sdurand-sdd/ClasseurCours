@@ -1155,7 +1155,7 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
             document.getElementById('courseNotes').value = course.notes || '';
             
             // Si le cours a déjà des valeurs sauvegardées, les utiliser
-            document.getElementById('courseContent').value = course.content || '';
+            document.getElementById('courseContent').innerHTML = course.content || '';
             document.getElementById('courseHomework').value = course.homework || '';
             document.getElementById('courseSessionNum').value = course.sessionNum || 1;
             
@@ -1680,6 +1680,7 @@ function truncate(str, n) {
 
 </body>
 </html>
+
 
 
 
