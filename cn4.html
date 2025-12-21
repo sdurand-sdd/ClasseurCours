@@ -1209,8 +1209,11 @@ function saveCourse() {
         if (sequence) sequenceName = sequence.name;
     }
     
-    const content = document.getElementById('courseContent').value;
-    const homework = document.getElementById('courseHomework').value;
+    // CHANGEMENT ICI : .innerHTML pour capturer le gras/couleurs
+    const content = document.getElementById('courseContent').innerHTML;
+    // CHANGEMENT ICI (si vous avez mis l'éditeur riche pour les devoirs aussi)
+    const homework = document.getElementById('courseHomework').innerHTML;
+    
     const sessionNum = parseInt(document.getElementById('courseSessionNum').value, 10) || 1;
     
     // 2. On met à jour l'objet global 'state'
@@ -1218,20 +1221,15 @@ function saveCourse() {
         date: document.getElementById('courseDate').value,
         sequence: sequenceName, 
         sessionNum: sessionNum, 
-        content: content, 
+        content: content, // Contiendra maintenant le HTML <b>...</b>
         homework: homework, 
         notes: document.getElementById('courseNotes').value
     };
 
-    // 3. On appelle VOTRE fonction de sauvegarde qui marche
+    // 3. Sauvegarde Firebase
     if (userId) {
-        // On affiche un message dans la console pour vérifier
         console.log("Lancement de la sauvegarde globale via saveData...");
-        
-        // On exécute la sauvegarde
         saveData(); 
-        
-        // On ferme et on rafraîchit l'affichage
         renderCalendar();
         closeCourseModal();
     } else {
@@ -1682,6 +1680,7 @@ function truncate(str, n) {
 
 </body>
 </html>
+
 
 
 
