@@ -1826,6 +1826,13 @@ document.addEventListener('DOMContentLoaded', () => {
         handleAuthStateChange(user);
     });
 });
+        // Force la fermeture de toutes les fenêtres au démarrage de la page
+window.addEventListener('load', () => {
+    document.querySelectorAll('.modal').forEach(m => {
+        m.classList.remove('active');
+        m.style.display = 'none';
+    });
+});
     </script>
 
 </body>
