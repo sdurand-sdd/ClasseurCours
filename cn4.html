@@ -990,7 +990,7 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
             }
         }
 
-       function renderCourseSlot(week, slotNum, globalNum) {
+      function renderCourseSlot(week, slotNum, globalNum) {
     const key = `${state.currentClass}-W${week}-C${slotNum}`;
     const course = state.courses[key] || {}; 
     
@@ -1002,9 +1002,11 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
         }
     }
     
-    // On prépare les versions "texte brut" pour l'aperçu du calendrier
-    const cleanContent = course.content ? course.content.replace(/<[^>]*>?/gm, '') : '';
+    // Version texte brut pour le homework seulement (pour limiter la hauteur)
     const cleanHomework = course.homework ? course.homework.replace(/<[^>]*>?/gm, '') : '';
+    
+    // Pour le contenu principal, on conserve le HTML pour afficher le formatage
+    const displayContent = course.content || '';
     
     return `
         <div class="course-slot" onclick="editCourse('${key}', ${week}, ${slotNum}, ${globalNum})">
@@ -1012,7 +1014,7 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
             ${course.date ? `<div class="course-date">📅 ${formatDate(course.date)}</div>` : '<div class="course-date">⚠️ Date non définie</div>'}
             ${sequenceDisplay ? `<div class="course-content">${sequenceDisplay}</div>` : ''} 
             
-            ${course.content ? `<div class="course-content">${truncate(cleanContent, 100)}</div>` : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'}
+            ${course.content ? `<div class="course-content" style="max-height: 120px; overflow: hidden; text-overflow: ellipsis;">${displayContent}</div>` : '<div class="course-content" style="color: #adb5bd;">Cliquez pour ajouter du contenu</div>'}
             
             ${course.homework ? `<div class="course-homework"><strong>📝 À faire:</strong> ${truncate(cleanHomework, 80)}</div>` : ''}
             
@@ -1730,6 +1732,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
