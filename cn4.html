@@ -1670,10 +1670,19 @@ function truncate(str, n) {
     if (!str) return '';
     return (str.length > n) ? str.substr(0, n - 1) + '...' : str;
 }
+    // Fonction pour que les boutons du texte enrichi fonctionne
+    function formatDoc(cmd, value = null) {
+    // Exécute la commande de mise en forme sur le texte sélectionné
+    document.execCommand(cmd, false, value);
+    // Garde le focus sur la zone de texte
+    document.getElementById('courseContent').focus();
+}
+    
     </script>
 
 </body>
 </html>
+
 
 
 
