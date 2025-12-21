@@ -185,25 +185,25 @@
 /* --- BLOC MODAL CORRIGÉ --- */
 /* Cache absolument tout au chargement */
 .modal {
-    display: none !important; 
+    display: none; /* Caché par défaut */
     position: fixed !important;
-    /* On force la position sur toute la surface de l'écran */
     top: 0 !important;
     left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background-color: rgba(0, 0, 0, 0.75) !important;
     
-    /* Un z-index astronomique pour passer devant le calendrier */
-    z-index: 2147483647 !important; 
+    /* On s'assure que rien ne passe devant */
+    z-index: 999999 !important;
     
-    background-color: rgba(0, 0, 0, 0.8) !important; /* Voile noir plus sombre */
-    overflow-y: auto;
+    /* On annule les héritages gênants */
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important; 
 }
 
 .modal.active {
-    display: flex !important;
+    display: flex !important; /* On affiche en flex pour centrer */
     align-items: center;
     justify-content: center;
 }
