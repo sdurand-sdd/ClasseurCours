@@ -1280,30 +1280,31 @@ function editCourse(key, week, slotNum, globalNum) {
     if (elHomework) elHomework.innerHTML = course.homework || '';
 
     // 4. OUVERTURE DE LA MODALE
-    const modal = document.getElementById('courseModal');
+  const modal = document.getElementById('courseModal');
     if (modal) {
-        console.log("Tentative d'affichage de courseModal...");
-        modal.style.display = 'block'; // On affiche
-        modal.classList.add('active'); // Parfois utilisé par certains frameworks CSS
+        console.log("Ouverture de courseModal...");
+        
+        // IMPORTANT : On retire le style "inline" pour laisser le CSS gérer l'affichage
+        modal.style.display = ''; 
+        
+        // On utilise uniquement la classe active pour afficher et centrer
+        modal.classList.add('active'); 
+        
+        // On s'assure que la fenêtre remonte en haut si elle était déjà ouverte
+        modal.scrollTop = 0; 
     } else {
         console.error("ERREUR : L'élément avec l'ID 'courseModal' est introuvable !");
     }
 }
 
-       function closeCourseModal() {
+      function closeCourseModal() {
     const modal = document.getElementById('courseModal');
     if (modal) {
-                    
-        // 2. On retire la classe active (au cas où votre CSS l'utilise)
-        modal.classList.remove('active');
+        modal.classList.remove('active'); // On enlève la classe qui affiche
+        // On NE met PAS de modal.style.display = 'none' ici
     }
-    
-    // 3. On remet la variable de suivi à vide
-    currentEditingKey = null; 
-    
-    console.log("Fenêtre fermée et prête pour le prochain clic.");
+    currentEditingKey = null;
 }
-
 function saveCourse() {
     // 1. On récupère la clé du cours (currentEditingKey)
     if (!currentEditingKey) {
