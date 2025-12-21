@@ -185,18 +185,26 @@
 /* --- BLOC MODAL CORRIGÉ --- */
 /* Cache absolument tout au chargement */
 .modal {
+    /* 1. Caché par défaut avec une priorité maximale */
     display: none !important; 
+    
+    /* 2. Sort du flux de la page (ne s'affiche plus en bas) */
     position: fixed !important;
+    
+    /* 3. Couvre tout l'écran */
     top: 0 !important;
     left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    background-color: rgba(0, 0, 0, 0.7) !important;
-    z-index: 99999 !important; /* Force le passage devant le calendrier */
+    width: 100% !important;
+    height: 100% !important;
+    
+    /* 4. Passe devant tout (calendrier inclus) */
+    z-index: 999999 !important; 
+    
+    background-color: rgba(0, 0, 0, 0.75);
     overflow-y: auto;
 }
 
-/* S'affiche uniquement quand on ajoute la classe .active */
+/* S'affiche seulement quand la fonction editCourse ajoute 'active' */
 .modal.active {
     display: flex !important;
     align-items: center;
