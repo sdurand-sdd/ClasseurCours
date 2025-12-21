@@ -489,7 +489,7 @@
             </div>
     </div>
     
-    <div class="modal" id="courseModal">
+    <div class="modal" id="courseModal" hidden>
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Éditer le cours</h2>
@@ -1284,6 +1284,7 @@ function editCourse(key, week, slotNum, globalNum) {
         modal.style.display = ''; 
         
         // On utilise uniquement la classe active pour afficher et centrer
+        modal.removeAttribute('hidden');
         modal.classList.add('active'); 
         
         // On s'assure que la fenêtre remonte en haut si elle était déjà ouverte
