@@ -378,94 +378,94 @@
             </div>
     </div>
     
-    <div class="modal" id="courseModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Éditer le cours</h2>
-                <button class="close-btn" onclick="closeCourseModal()">Fermer</button>
-            </div>
-            <form id="courseForm">
+ <div class="modal" id="courseModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Éditer le cours</h2>
+            <button class="close-btn" onclick="closeCourseModal()">Fermer</button>
+        </div>
+        <form id="courseForm" onsubmit="event.preventDefault(); saveCourse();">
+            
+            <div class="form-group" style="display: flex; gap: 20px; align-items: flex-end;">
+                <div style="flex: 1;">
+                    <label>Niveau Pédagogique</label>
+                    <select id="courseLevelSelect" onchange="renderCourseSequenceSelect()">
+                        <option value="">-- Niveau --</option>
+                    </select>
+                </div>
                 
-                <div class="form-group" style="display: flex; gap: 20px; align-items: flex-end;">
-                    <div style="flex: 1;">
-                        <label>Niveau Pédagogique</label>
-                        <select id="courseLevelSelect" onchange="renderCourseSequenceSelect()">
-                            <option value="">-- Niveau --</option>
-                            </select>
-                    </div>
-                    
-                    <div style="flex: 2;">
-                        <label>Séquence (Thème)</label>
-                        <select id="courseSequenceSelect" onchange="renderCourseSessionSelect()">
-                            <option value="">-- Séquence --</option>
-                        </select>
-                    </div>
-                    
-                    <div style="flex: 2;">
-                        <label>Séance Précise</label>
-                        <select id="courseSessionSelect" onchange="applySessionContent()">
-                            <option value="">-- Séance --</option>
-                        </select>
-                    </div>
-                    
-                    <div style="flex: 1;">
+                <div style="flex: 2;">
+                    <label>Séquence (Thème)</label>
+                    <select id="courseSequenceSelect" onchange="renderCourseSessionSelect()">
+                        <option value="">-- Séquence --</option>
+                    </select>
+                </div>
+                
+                <div style="flex: 2;">
+                    <label>Séance Précise</label>
+                    <select id="courseSessionSelect" onchange="applySessionContent()">
+                        <option value="">-- Séance --</option>
+                    </select>
+                </div>
+                
+                <div style="flex: 1;">
                     <div id="syncStatus" style="display: inline-flex; align-items: center; margin-left: 15px; font-size: 0.85em; font-family: sans-serif; color: #666;">
                         <span id="syncDot" style="width: 10px; height: 10px; background-color: #4caf50; border-radius: 50%; margin-right: 8px; display: inline-block;"></span>
                         <span id="syncText">Données synchronisées</span>
                     </div>
-                        <label>Numéro Séance/Cours</label>
-                        <input type="number" id="courseSessionNum" min="1" value="1" style="width: 100%;">
-                    </div>
+                    <label>Numéro Séance/Cours</label>
+                    <input type="number" id="courseSessionNum" min="1" value="1" style="width: 100%;">
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label>Date du cours</label>
-                    <input type="date" id="courseDate" required>
+            <div class="form-group">
+                <label>Date du cours</label>
+                <input type="date" id="courseDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Contenu du cours</label>
+                <div class="toolbar" style="background: #f8f9fa; padding: 8px; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; display: flex; gap: 10px;">
+                    <button type="button" onclick="formatDoc('bold', null, 'courseContent')" style="cursor:pointer; padding: 4px 10px; border: 1px solid #ccc; background: white; border-radius: 3px;"><b>B</b></button>
+                    <button type="button" onclick="formatDoc('italic', null, 'courseContent')" style="cursor:pointer; padding: 4px 10px; border: 1px solid #ccc; background: white; border-radius: 3px;"><i>I</i></button>
+                    <button type="button" onclick="formatDoc('underline', null, 'courseContent')" style="cursor:pointer; padding: 4px 10px; border: 1px solid #ccc; background: white; border-radius: 3px;"><u>U</u></button>
+                    <input type="color" onchange="formatDoc('foreColor', this.value, 'courseContent')" style="cursor:pointer; width: 30px; height: 28px; border: 1px solid #ccc; border-radius: 3px;">
                 </div>
                 
-                <div class="form-group">
-        <label>Contenu du cours</label>
-        <div class="toolbar" style="background: #f8f9fa; padding: 8px; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; display: flex; gap: 10px;">
-            <button type="button" onclick="formatDoc('bold')" style="cursor:pointer; padding: 2px 8px;"><b>B</b></button>
-            <button type="button" onclick="formatDoc('italic')" style="cursor:pointer; padding: 2px 8px;"><i>I</i></button>
-            <button type="button" onclick="formatDoc('underline')" style="cursor:pointer; padding: 2px 8px;"><u>U</u></button>
-            <input type="color" onchange="formatDoc('foreColor', this.value)" style="cursor:pointer; width: 30px; height: 24px; border: none; background: none;">
-        </div>
-        
-        <div id="courseContent" 
-             contenteditable="true" 
-             style="border: 1px solid #ddd; min-height: 150px; padding: 12px; background: white; border-radius: 0 0 4px 4px; overflow-y: auto; outline: none;">
-        </div>
-    </div>
-    
-    </div>
-
-                
-              <div class="form-group">
-    <label>Travail à faire</label>
-    <div class="toolbar" style="background: #f8f9fa; padding: 5px; border: 1px solid #ddd; border-bottom: none; display: flex; gap: 8px;">
-        <button type="button" onclick="formatDoc('bold', null, 'courseHomework')"><b>B</b></button>
-        <button type="button" onclick="formatDoc('italic', null, 'courseHomework')"><i>I</i></button>
-        <input type="color" onchange="formatDoc('foreColor', this.value, 'courseHomework')">
-    </div>
-    <div id="courseHomework" 
-         contenteditable="true" 
-         style="border: 1px solid #ddd; min-height: 80px; padding: 10px; background: white; border-radius: 0 0 4px 4px; outline: none;">
+                <div id="courseContent" 
+                     contenteditable="true" 
+                     style="border: 1px solid #ddd; min-height: 150px; padding: 12px; background: white; border-radius: 0 0 4px 4px; overflow-y: auto; outline: none; font-family: Arial, sans-serif; line-height: 1.6;">
+                    Cliquez pour ajouter du contenu
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Travail à faire</label>
+                <div class="toolbar" style="background: #f8f9fa; padding: 8px; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; display: flex; gap: 10px;">
+                    <button type="button" onclick="formatDoc('bold', null, 'courseHomework')" style="cursor:pointer; padding: 4px 10px; border: 1px solid #ccc; background: white; border-radius: 3px;"><b>B</b></button>
+                    <button type="button" onclick="formatDoc('italic', null, 'courseHomework')" style="cursor:pointer; padding: 4px 10px; border: 1px solid #ccc; background: white; border-radius: 3px;"><i>I</i></button>
+                    <input type="color" onchange="formatDoc('foreColor', this.value, 'courseHomework')" style="cursor:pointer; width: 30px; height: 28px; border: 1px solid #ccc; border-radius: 3px;">
+                </div>
+                <div id="courseHomework" 
+                     contenteditable="true" 
+                     style="border: 1px solid #ddd; min-height: 80px; padding: 10px; background: white; border-radius: 0 0 4px 4px; outline: none; font-family: Arial, sans-serif; line-height: 1.6;">
+                    Cliquez pour ajouter du travail à faire
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Notes personnelles</label>
+                <textarea id="courseNotes" rows="4" placeholder="Remarques, observations..."></textarea>
+            </div>
+            
+            <div style="text-align: right; margin-top: 15px;">
+                <button type="submit" class="save-btn" style="width: 100%;">
+                    💾 Enregistrer
+                </button>
+            </div>
+        </form>
     </div>
 </div>
-                <div class="form-group">
-                    <label>Notes personnelles</label>
-                    <textarea id="courseNotes" rows="4" placeholder="Remarques, observations..."></textarea>
-                </div>
-                
-                <div style="text-align: right; margin-top: 15px;">
-                    <button type="submit" class="save-btn" style="width: 100%;">
-                        💾 Enregistrer
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
     <div class="modal" id="notesModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1703,6 +1703,7 @@ function truncate(str, n) {
 
 </body>
 </html>
+
 
 
 
