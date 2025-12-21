@@ -26,6 +26,8 @@
             border-radius: 15px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
+            position: relative; /* Assurez que c'est 'relative' et non 'fixed' ou 'absolute' */
+            z-index: 1; /* Valeur basse pour rester sous les modales */
         }
 
         .header {
@@ -105,6 +107,8 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            position: relative;
+            z-index: 2; /* Valeur basse, inférieure aux modales */
         }
 
         .week-header {
@@ -161,21 +165,25 @@
         /* Modal Styles */
         .modal {
             position: fixed;
-            z-index: 1000;
+            z-index: 9999;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
+            background-color: rgba(0, 0, 0, 0.7);
             display: none;
             overflow-y: auto;
             opacity: 0;
             transition: opacity 0.3s;
+             overscroll-behavior: contain; /* Empêche le défilement en arrière-plan */
         }
 
         .modal.active {
-            display: block;
+            display: flex;
+            align-items: flex-start; /* Alignement en haut pour les longues modales */
+             justify-content: center;
             opacity: 1;
+            padding: 20px 0; /* Espace en haut et en bas */
         }
 
         .modal-content {
@@ -184,15 +192,17 @@
             padding: 30px;
             max-width: 800px; /* Taille augmentée */
             width: 95%;
-            max-height: 95vh;
+            max-height: 90vh;
             overflow-y: auto;
-            margin: 2% auto; 
+            margin-top: 20px; /* Espace depuis le haut */
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); 
             animation: slide-down 0.3s ease-out;
+             position: relative;
+             z-index: 10000;
         }
         
         @keyframes slide-down {
-            from { transform: translateY(-50px); opacity: 0; }
+            from { transform: translateY(-30px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
 
