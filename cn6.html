@@ -1196,49 +1196,54 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
         // =========================================================
 
         function editCourse(key, week, slotNum, globalNum) {
-            currentEditingCourse = key;
-            const course = state.courses[key] || {};
-            
-            document.getElementById('courseDate').value = course.date || '';
-            document.getElementById('courseNotes').value = course.notes || '';
-            
-            // Si le cours a déjà des valeurs sauvegardées, les utiliser
-            document.getElementById('courseContent').innerHTML = course.content || '';
-            document.getElementById('courseHomework').innerHTML = course.homework || '';
-            document.getElementById('courseSessionNum').value = course.sessionNum || 1;
-            
-            // 1. Déterminer le Niveau actuel de la classe 
-            const currentClassId = state.currentClass;
-            const currentLevel = currentClassId.split('-')[0]; // Ex: '3-3' -> '3'
+    currentEditingCourse = key;
+    const course = state.courses[key] || {};
+    
+    // Champs classiques
+    document.getElementById('courseDate').value = course.date || '';
+    document.getElementById('courseNotes').value = course.notes || '';
+    document.getElementById('courseSessionNum').value = course.sessionNum || 1;
+    
+    // --- CORRECTION POUR QUILL ---
+    // On remplace le .innerHTML par l'accès aux objets Quill
+    if (courseContentEditor) {
+        courseContentEditor.root.innerHTML = course.content || '';
+    }
+    if (courseHomeworkEditor) {
+        courseHomeworkEditor.root.innerHTML = course.homework || '';
+    }
+    // -----------------------------
+    
+    // 1. Déterminer le Niveau actuel de la classe 
+    const currentClassId = state.currentClass;
+    const currentLevel = currentClassId.split('-')[0]; // Ex: '3-3' -> '3'
 
-            // 2. Initialiser la sélection de Niveau
-            renderCourseLevelSelect(currentLevel);
+    // 2. Initialiser la sélection de Niveau
+    renderCourseLevelSelect(currentLevel);
+    
+    // 3. Initialiser les sélections de Séquence et Séance si elles sont déjà dans le cours
+    if (course.sequence) {
+        const sequenceArray = state.sequences[currentLevel] || [];
+        const sequence = sequenceArray.find(s => s.name === course.sequence);
+        
+        if (sequence) {
+            const sequenceIdx = sequenceArray.indexOf(sequence);
             
-            // 3. Initialiser les sélections de Séquence et Séance si elles sont déjà dans le cours
-            if (course.sequence) {
-                // Trouver l'index de la séquence sauvegardée
-                const sequenceArray = state.sequences[currentLevel] || [];
-                const sequence = sequenceArray.find(s => s.name === course.sequence);
-                
-                if (sequence) {
-                    const sequenceIdx = sequenceArray.indexOf(sequence);
-                    
-                    // On simule une sélection pour pré-remplir les autres listes
-                    document.getElementById('courseLevelSelect').value = currentLevel;
-                    renderCourseSequenceSelect(course.sequence); 
-                    document.getElementById('courseSequenceSelect').value = sequenceIdx; 
-                    
-                    // Sélectionne la séance
-                    renderCourseSessionSelect(course.sessionNum);
-                }
-            } else {
-                // Si aucune séquence n'est sauvegardée, initialiser la liste des séquences du niveau
-                renderCourseSequenceSelect(); 
-            }
+            document.getElementById('courseLevelSelect').value = currentLevel;
+            renderCourseSequenceSelect(course.sequence); 
+            document.getElementById('courseSequenceSelect').value = sequenceIdx; 
             
-            document.getElementById('courseModal').classList.add('active');
+            renderCourseSessionSelect(course.sessionNum);
         }
-
+    } else {
+        renderCourseSequenceSelect(); 
+    }
+    
+    // On affiche la modal
+    document.getElementById('courseModal').classList.add('active');
+    // Si votre modal utilise style.display au lieu d'une classe CSS, utilisez la ligne suivante :
+    // document.getElementById('courseModal').style.display = 'block';
+}
         function closeCourseModal() {
             document.getElementById('courseModal').classList.remove('active');
             currentEditingCourse = null;
@@ -1835,6 +1840,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
