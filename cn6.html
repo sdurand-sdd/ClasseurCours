@@ -55,6 +55,34 @@
         .ql-editor {
             min-height: 100px;
         }
+
+        /* Force la visibilité des icônes Quill */
+        .ql-snow .ql-stroke {
+            stroke: #333 !important;
+        }
+        .ql-snow .ql-fill {
+            fill: #333 !important;
+        }
+        .ql-snow .ql-picker {
+            color: #333 !important;
+        }
+
+/* Amélioration de la barre d'outils */
+        .ql-toolbar.ql-snow {
+            border: 1px solid #ccc;
+            background: #f8f9fa !important; /* Gris très léger pour contraster avec le blanc */
+            border-radius: 5px 5px 0 0;
+        }
+
+        .ql-container.ql-snow {
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+
+/* Effet au survol des boutons */
+        .ql-snow.ql-toolbar button:hover .ql-stroke {
+            stroke: #007bff !important;
+        }
         
         .header {
             background: linear-gradient(135deg, #a9a9aa 0%, #222224 100%);
@@ -1828,6 +1856,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
