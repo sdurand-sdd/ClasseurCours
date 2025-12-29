@@ -1441,65 +1441,73 @@ function saveWeekNotes() {
         }
         
         function renderSequenceSessions() {
-            const list = document.getElementById('sequenceSessionsList');
-            if (!list) return;
+    const list = document.getElementById('sequenceSessionsList');
+    if (!list) return;
 
-            list.innerHTML = ""; // Vider la liste
+    list.innerHTML = ""; // Vider la liste avant de reconstruire
 
-            if (tempSessions.length === 0) {
-                list.innerHTML = '<div style="color: #999; padding: 20px; text-align: center;">Aucune séance définie pour cette séquence.</div>';
-                return;
-            }
+    if (tempSessions.length === 0) {
+        list.innerHTML = '<div style="color: #999; padding: 20px; text-align: center;">Aucune séance définie pour cette séquence.</div>';
+        return;
+    }
 
-            tempSessions.forEach((session, index) => {
-                const card = document.createElement('div');
-                card.className = "session-card";
-                card.innerHTML = `
-                    <div class="session-card-header">
-                        <strong>Séance ${session.sessionNum}</strong>
-                        <button type="button" class="btn-small btn-delete" onclick="removeSessionFromSequence(${index})">Supprimer</button>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Titre de la séance</label>
-                        <input type="text" value="${session.name || ''}" 
-                               oninput="tempSessions[${index}].name = this.value" 
-                               placeholder="Ex: Introduction aux fonctions">
-                    </div>
+    tempSessions.forEach((session, index) => {
+        const card = document.createElement('div');
+        card.className = "session-card";
+        card.innerHTML = `
+            <div class="session-card-header">
+                <strong>Séance ${session.sessionNum}</strong>
+                <button type="button" class="btn-small btn-delete" onclick="removeSessionFromSequence(${index})">Supprimer</button>
+            </div>
+            
+            <div class="form-group">
+                <label>Titre de la séance</label>
+                <input type="text" value="${session.name || ''}" 
+                       oninput="tempSessions[${index}].name = this.value" 
+                       placeholder="Ex: Introduction aux fonctions">
+            </div>
 
-                    <div class="form-group">
-                        <label>Contenu pédagogique par défaut</label>
-                        <div id="editor-content-${index}" class="quill-editor-container"></div>
-                    </div>
+            <div class="form-group">
+                <label>Contenu pédagogique par défaut</label>
+                <div id="editor-content-${index}" class="quill-editor-container"></div>
+            </div>
 
-                    <div class="form-group">
-                        <label>Travail à faire par défaut</label>
-                        <div id="editor-homework-${index}" class="quill-editor-container"></div>
-                    </div>
-                `;
-                list.appendChild(card);
+            <div class="form-group">
+                <label>Travail à faire par défaut</label>
+                <div id="editor-homework-${index}" class="quill-editor-container"></div>
+            </div>
+        `;
+        list.appendChild(card);
 
-                // Initialisation Quill pour le Contenu
-                const qContent = new Quill(`#editor-content-${index}`, {
-                    theme: 'snow',
-                    modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }]] }
-                });
-                qContent.root.innerHTML = session.content || "";
-                qContent.on('text-change', () => {
-                    tempSessions[index].content = qContent.root.innerHTML;
-                });
+        // Configuration commune de la barre d'outils (Toolbar)
+        // Ajout de 'underline' et 'clean' (pour nettoyer le texte)
+        const fullToolbarOptions = [
+            ['bold', 'italic', 'underline'], 
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['clean'] 
+        ];
 
-                // Initialisation Quill pour les Devoirs
-                const qHomework = new Quill(`#editor-homework-${index}`, {
-                    theme: 'snow',
-                    modules: { toolbar: [['bold', 'italic'], [{ 'list': 'bullet' }]] }
-                });
-                qHomework.root.innerHTML = session.homework || "";
-                qHomework.on('text-change', () => {
-                    tempSessions[index].homework = qHomework.root.innerHTML;
-                });
-            });
-        }
+        // Initialisation Quill pour le Contenu
+        const qContent = new Quill(`#editor-content-${index}`, {
+            theme: 'snow',
+            modules: { toolbar: fullToolbarOptions }
+        });
+        qContent.root.innerHTML = session.content || "";
+        qContent.on('text-change', () => {
+            tempSessions[index].content = qContent.root.innerHTML;
+        });
+
+        // Initialisation Quill pour les Devoirs
+        const qHomework = new Quill(`#editor-homework-${index}`, {
+            theme: 'snow',
+            modules: { toolbar: fullToolbarOptions }
+        });
+        qHomework.root.innerHTML = session.homework || "";
+        qHomework.on('text-change', () => {
+            tempSessions[index].homework = qHomework.root.innerHTML;
+        });
+    });
+}
 
         function deleteSession(index) {
             if (confirm("Supprimer cette séance ?")) {
@@ -1856,6 +1864,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
