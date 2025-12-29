@@ -50,6 +50,7 @@
         }
         .quill-editor-container {
             background: white;
+            height: 150px;
             margin-bottom: 15px;
         }
         .ql-editor {
@@ -58,26 +59,33 @@
 
         /* Force la visibilité des icônes Quill */
         .ql-snow .ql-stroke {
-            stroke: #333 !important;
+            stroke: #333 !important; stroke-width: 2px;
         }
         .ql-snow .ql-fill {
             fill: #333 !important;
         }
         .ql-snow .ql-picker {
-            color: #333 !important;
+            color: #333 !important; font-weight: bold;
         }
 
-/* Amélioration de la barre d'outils */
+        /* Conteneur pour l'édition des cours */
+        .course-editor-container {
+            background: white;
+            height: 250px; /* Plus grand pour le confort */
+            margin-bottom: 10px;
+        }
+
+        /* Amélioration de la barre d'outils */
         .ql-toolbar.ql-snow {
-            border: 1px solid #ccc;
-            background: #f8f9fa !important; /* Gris très léger pour contraster avec le blanc */
-            border-radius: 5px 5px 0 0;
+            background: #f8f9fa !important;
+            border-color: #ccc !important;
         }
-
+        
         .ql-container.ql-snow {
-            border: 1px solid #ccc;
-            border-top: none;
-        }
+            border: 1px solid #ccc !important;
+            background: white;
+            border-radius: 0 0 5px 5px;
+        }    
 
 /* Effet au survol des boutons */
         .ql-snow.ql-toolbar button:hover .ql-stroke {
@@ -382,41 +390,43 @@
 </head>
 
 <body>
+
 <div id="auth-section" style="padding: 50px; text-align: center; max-width: 400px; margin: 100px auto; background-color: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
     <h2>Accès au Classeur Numérique</h2>
     <p>Veuillez vous connecter pour accéder à vos données sécurisées.</p>
     
     <div class="form-group mb-2">
-        <input type="email" id="auth-email" placeholder="Adresse E-mail" class="form-control">
+        <input type="email" id="auth-email" placeholder="Adresse E-mail" class="form-control" style="width: 100%; padding: 8px; margin-bottom: 10px;">
     </div>
     <div class="form-group mb-3">
-        <input type="password" id="auth-password" placeholder="Mot de passe" class="form-control">
+        <input type="password" id="auth-password" placeholder="Mot de passe" class="form-control" style="width: 100%; padding: 8px; margin-bottom: 15px;">
     </div>
     
-    <button onclick="signIn()" class="btn btn-primary">
-        Se connecter
-    </button>
-    <button onclick="signUp()" class="btn btn-success" style="margin-left: 10px;">
-        S'inscrire (Première Utilisation)
-    </button>
+    <button onclick="signIn()" class="btn btn-primary" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Se connecter</button>
+    <button onclick="signUp()" class="btn btn-success" style="margin-left: 10px; padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">S'inscrire</button>
 </div>
+
 <div id="app-section" style="display: none;">
     <div class="container">
         <div class="header">
             <h1>📚 Classeur Numérique Pédagogique</h1>
         </div>
-       <label for="yearSelect">Année scolaire :</label>
-<select id="yearSelect" onchange="changeYear(this.value)">
-    <option value="2025-2026">2025-2026</option>
-    <option value="2026-2027">2026-2027</option>
-    <option value="2027-2028">2027-2028</option>
-</select> 
-        <div class="controls">
+
+        <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <label for="yearSelect">Année :</label>
+                <select id="yearSelect" onchange="changeYear(this.value)">
+                    <option value="2025-2026">2025-2026</option>
+                    <option value="2026-2027">2026-2027</option>
+                    <option value="2027-2028">2027-2028</option>
+                </select> 
+            </div>
+
             <div class="class-selector">
                 <label for="classSelect">Classe :</label>
                 <select id="classSelect"></select>
                 <button onclick="openClassManager()">Gérer les classes</button>
-                <button onclick="openSequenceManager()">Catalogue Séquences</button>
+                <button onclick="openSequenceManager()" style="background: #6f42c1; color: white;">Catalogue Séquences</button>
             </div>
             
             <div class="period-nav">
@@ -425,236 +435,157 @@
                 <button id="nextPeriod">→</button>
             </div>
             
-            <div class="export-controls">
-                <button onclick="openExportModal()">Importer/Exporter</button>
-            </div>
+            <button onclick="openExportModal()">Importer/Exporter</button>
         </div>
         
-        <div class="calendar-grid" id="calendarGrid">
-            </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
     </div>
     
- <div class="modal" id="courseModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Éditer le cours</h2>
-            <button class="close-btn" onclick="closeCourseModal()">Fermer</button>
-        </div>
-        <form id="courseForm" onsubmit="event.preventDefault(); saveCourse();">
-            
-            <div class="form-group" style="display: flex; gap: 20px; align-items: flex-end;">
-                <div style="flex: 1;">
-                    <label>Niveau Pédagogique</label>
-                    <select id="courseLevelSelect" onchange="renderCourseSequenceSelect()">
-                        <option value="">-- Niveau --</option>
-                    </select>
-                </div>
-                
-                <div style="flex: 2;">
-                    <label>Séquence (Thème)</label>
-                    <select id="courseSequenceSelect" onchange="renderCourseSessionSelect()">
-                        <option value="">-- Séquence --</option>
-                    </select>
-                </div>
-                
-                <div style="flex: 2;">
-                    <label>Séance Précise</label>
-                    <select id="courseSessionSelect" onchange="applySessionContent()">
-                        <option value="">-- Séance --</option>
-                    </select>
-                </div>
-                
-                <div style="flex: 1;">
-                    <div id="syncStatus" style="display: inline-flex; align-items: center; margin-left: 15px; font-size: 0.85em; font-family: sans-serif; color: #666;">
-                        <span id="syncDot" style="width: 10px; height: 10px; background-color: #4caf50; border-radius: 50%; margin-right: 8px; display: inline-block;"></span>
-                        <span id="syncText">Données synchronisées</span>
-                    </div>
-                    <label>Numéro Séance/Cours</label>
-                    <input type="number" id="courseSessionNum" min="1" value="1" style="width: 100%;">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Date du cours</label>
-                <input type="date" id="courseDate" required>
-            </div>
-            
-            <div class="form-group">
-                <label>Contenu du cours</label>
-                <div class="toolbar" style="background: #f8f9fa; padding: 8px; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; display: flex; gap: 10px;">
-                    <button type="button" onclick="formatDoc('bold', null, 'courseContent')" style="cursor:pointer; padding: 4px 10px; border: 1px solid #ccc; background: white; border-radius: 3px;"><b>B</b></button>
-                    <button type="button" onclick="formatDoc('italic', null, 'courseContent')" style="cursor:pointer; padding: 4px 10px; border: 1px solid #ccc; background: white; border-radius: 3px;"><i>I</i></button>
-                    <button type="button" onclick="formatDoc('underline', null, 'courseContent')" style="cursor:pointer; padding: 4px 10px; border: 1px solid #ccc; background: white; border-radius: 3px;"><u>U</u></button>
-                    <input type="color" onchange="formatDoc('foreColor', this.value, 'courseContent')" style="cursor:pointer; width: 30px; height: 28px; border: 1px solid #ccc; border-radius: 3px;">
-                </div>
-                
-                <div id="courseContent" 
-                     contenteditable="true" 
-                     style="border: 1px solid #ddd; min-height: 150px; padding: 12px; background: white; border-radius: 0 0 4px 4px; overflow-y: auto; outline: none; font-family: Arial, sans-serif; line-height: 1.6;">
-                    Cliquez pour ajouter du contenu
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Travail à faire</label>
-                <div class="toolbar" style="background: #f8f9fa; padding: 8px; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; display: flex; gap: 10px;">
-                    <button type="button" onclick="formatDoc('bold', null, 'courseHomework')" style="cursor:pointer; padding: 4px 10px; border: 1px solid #ccc; background: white; border-radius: 3px;"><b>B</b></button>
-                    <button type="button" onclick="formatDoc('italic', null, 'courseHomework')" style="cursor:pointer; padding: 4px 10px; border: 1px solid #ccc; background: white; border-radius: 3px;"><i>I</i></button>
-                    <input type="color" onchange="formatDoc('foreColor', this.value, 'courseHomework')" style="cursor:pointer; width: 30px; height: 28px; border: 1px solid #ccc; border-radius: 3px;">
-                </div>
-                <div id="courseHomework" 
-                     contenteditable="true" 
-                     style="border: 1px solid #ddd; min-height: 80px; padding: 10px; background: white; border-radius: 0 0 4px 4px; outline: none; font-family: Arial, sans-serif; line-height: 1.6;">
-                    Cliquez pour ajouter du travail à faire
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Notes personnelles</label>
-                <textarea id="courseNotes" rows="4" placeholder="Remarques, observations..."></textarea>
-            </div>
-            
-            <div style="text-align: right; margin-top: 15px;">
-                <button type="submit" class="save-btn" style="width: 100%;">
-                    💾 Enregistrer
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-    <div class="modal" id="notesModal">
-        <div class="modal-content">
+    <div class="modal" id="courseModal">
+        <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
-                <h2>Notes de la semaine</h2>
-                <button class="close-btn" onclick="closeNotesModal()">Fermer</button>
+                <h2>Éditer le cours</h2>
+                <button class="close-btn" onclick="closeCourseModal()">Fermer</button>
             </div>
-            <form id="notesForm">
-                <div class="form-group">
-                    <label for="weekNotes">Notes personnelles pour cette semaine :</label>
-                    <textarea id="weekNotes" rows="8"></textarea>
+            <form id="courseForm" onsubmit="event.preventDefault(); saveCourse();">
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 150px;">
+                        <label>Niveau</label>
+                        <select id="courseLevelSelect" onchange="renderCourseSequenceSelect()" style="width: 100%;"></select>
+                    </div>
+                    <div style="flex: 2; min-width: 200px;">
+                        <label>Séquence</label>
+                        <select id="courseSequenceSelect" onchange="renderCourseSessionSelect()" style="width: 100%;"></select>
+                    </div>
+                    <div style="flex: 2; min-width: 200px;">
+                        <label>Séance</label>
+                        <select id="courseSessionSelect" onchange="applySessionContent()" style="width: 100%;"></select>
+                    </div>
+                    <div style="flex: 1; min-width: 100px;">
+                        <label>N° Séance</label>
+                        <input type="number" id="courseSessionNum" min="1" value="1" style="width: 100%;">
+                    </div>
                 </div>
-                <button type="submit" class="save-btn">💾 Enregistrer les notes</button>
+
+                <div class="form-group">
+                    <label>Date du cours</label>
+                    <input type="date" id="courseDate" required>
+                    <div id="syncStatus" style="float: right; font-size: 0.8em; color: #666;">
+                        <span id="syncDot" style="width: 8px; height: 8px; background-color: #4caf50; border-radius: 50%; display: inline-block; margin-right: 5px;"></span>
+                        <span id="syncText">Synchronisé</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Contenu du cours</label>
+                    <div id="courseContentQuill" style="height: 200px; background: white;"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Travail à faire</label>
+                    <div id="courseHomeworkQuill" style="height: 120px; background: white;"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Notes personnelles</label>
+                    <textarea id="courseNotes" rows="3" placeholder="Remarques privées..."></textarea>
+                </div>
+                
+                <button type="submit" class="save-btn" style="width: 100%; padding: 15px; font-size: 1.1em;">💾 Enregistrer le cours</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="sequenceModal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h2>Catalogue des Séquences Pédagogiques</h2>
+                <button class="close-btn" onclick="closeSequenceManager()">Fermer</button>
+            </div>
+            
+            <div class="list-management">
+                <h4>Séquences existantes</h4>
+                <div id="sequenceList" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px;"></div>
+            </div>
+            
+            <hr>
+            
+            <form id="sequenceForm">
+                <h4>Ajouter / Modifier une Séquence</h4>
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label>Niveau de Classe</label>
+                        <select id="sequenceLevel" required style="width: 100%;">
+                            <option value="">-- Niveau --</option>
+                            <option value="6">6ème</option>
+                            <option value="5">5ème</option>
+                            <option value="4">4ème</option>
+                            <option value="3">3ème</option>
+                        </select>
+                    </div>
+                    <div style="flex: 3;">
+                        <label>Nom de la Séquence (Thème)</label>
+                        <input type="text" id="sequenceName" required style="width: 100%;">
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <label><strong>Séances de la Séquence</strong></label>
+                    <button type="button" class="btn-small" style="background: #28a745; color: white;" onclick="addSessionToSequence()">+ Ajouter Séance</button>
+                </div>
+
+                <div id="sequenceSessionsList" style="max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 15px; background: #f1f1f1; border-radius: 5px;">
+                    <div style="color: #999; text-align: center;">Aucune séance.</div>
+                </div>
+                
+                <button type="submit" class="save-btn" style="margin-top: 20px;">💾 Enregistrer la Séquence Complète</button>
             </form>
         </div>
     </div>
 
     <div class="modal" id="classModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Gérer les Classes</h2>
-                <button class="close-btn" onclick="closeClassManager()">Fermer</button>
-            </div>
-            
+            <div class="modal-header"><h2>Gérer les Classes</h2><button class="close-btn" onclick="closeClassManager()">Fermer</button></div>
             <form onsubmit="event.preventDefault(); addClass();">
-                <h4>Ajouter une nouvelle classe</h4>
-                <div class="form-group">
-                    <label for="className">Nom de la classe (ex: 3°4)</label>
-                    <input type="text" id="className" required>
-                </div>
-               <div class="form-group">
-                    <label>Pattern de la semaine (Nombre de cours par semaine A/B)</label>
-                    <div style="display: flex; gap: 20px;">
-                        <label><input type="radio" name="weekPattern" value="3-2" checked> 3 cours Sem. A / 2 cours Sem. B</label>
-                        <label><input type="radio" name="weekPattern" value="2-3"> 2 cours Sem. A / 3 cours Sem. B</label>
-                    </div>
+                <h4>Ajouter une classe</h4>
+                <input type="text" id="className" placeholder="Nom de la classe (ex: 3°4)" required style="margin-bottom: 10px;">
+                <div style="margin-bottom: 15px;">
+                    <label><input type="radio" name="weekPattern" value="3-2" checked> 3 cours A / 2 cours B</label><br>
+                    <label><input type="radio" name="weekPattern" value="2-3"> 2 cours A / 3 cours B</label>
                 </div>
                 <button type="submit" class="save-btn">➕ Ajouter</button>
             </form>
-            
-            <div class="list-management">
-                <h4>Liste des classes existantes</h4>
-                <div id="classList">
-                    </div>
-            </div>
+            <div id="classList" style="margin-top: 20px;"></div>
         </div>
     </div>
 
-    <div class="modal" id="sequenceModal">
+    <div class="modal" id="notesModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Catalogue des Séquences Pédagogiques</h2>
-                <button class="close-btn" onclick="closeSequenceManager()">Fermer</button>
-            </div>
-            
-            <div class="list-management" style="margin-top: 0;">
-                <h4>Séquences existantes</h4>
-                <div id="sequenceList" style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius: 5px; padding: 10px;">
-                    </div>
-            </div>
-            
-            <hr style="margin: 20px 0;">
-            
-            <form id="sequenceForm">
-                <h4>Ajouter/Modifier une Séquence</h4>
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label for="sequenceLevel">Niveau de Classe</label>
-                    <select id="sequenceLevel" required>
-                        <option value="">-- Choisir un niveau --</option>
-                        <option value="6">6ème</option>
-                        <option value="5">5ème</option>
-                        <option value="4">4ème</option>
-                        <option value="3">3ème</option>
-                        <option value="Autre">Autre</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="sequenceName">Nom de la Séquence (Thème)</label>
-                    <input type="text" id="sequenceName" required>
-                </div>
-
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <label>Séances de la Séquence</label>
-                    <button type="button" class="btn-small save-btn" style="background: #007bff;" onclick="addSessionToSequence()">
-                        + Ajouter Séance
-                    </button>
-                </div>
-
-                <div id="sequenceSessionsList" style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; max-height: 250px; overflow-y: auto; margin-bottom: 15px;">
-                    <div style="color: #999;">Aucune séance ajoutée.</div>
-                </div>
-                
-                <button type="submit" class="save-btn">💾 Enregistrer la Séquence</button>
+            <div class="modal-header"><h2>Notes de la semaine</h2><button class="close-btn" onclick="closeNotesModal()">Fermer</button></div>
+            <form id="notesForm" onsubmit="event.preventDefault(); saveWeekNotes();">
+                <textarea id="weekNotes" rows="10" style="width: 100%;"></textarea>
+                <button type="submit" class="save-btn" style="margin-top: 10px;">💾 Enregistrer les notes</button>
             </form>
         </div>
     </div>
+
     <div class="modal" id="exportModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Importer / Exporter les Données</h2>
-                <button class="close-btn" onclick="closeExportModal()">Fermer</button>
-            </div>
-            
-            <div class="form-group">
-                <h4>Exporter</h4>
-                <p>Téléchargez une sauvegarde de toutes vos classes, séquences et cours.</p>
-                <button onclick="exportData()" class="save-btn" style="background: #007bff;">⬇️ Télécharger la sauvegarde (.json)</button>
-            </div>
-            
-            <hr style="margin: 20px 0;">
-            
-            <div class="form-group">
-                <h4>Importer</h4>
-                <p>Attention : L'importation écrasera toutes vos données actuelles.</p>
-                <input type="file" id="importFile" accept=".json">
-                <button onclick="importData()" class="save-btn" style="background: #ffc107; color: #333; margin-top: 10px;">⬆️ Importer le fichier</button>
-            </div>
+            <div class="modal-header"><h2>Importer / Exporter</h2><button class="close-btn" onclick="closeExportModal()">Fermer</button></div>
+            <button onclick="exportData()" class="save-btn" style="background: #007bff; margin-bottom: 20px;">⬇️ Télécharger la sauvegarde (.json)</button>
+            <hr>
+            <h4>Importer</h4>
+            <input type="file" id="importFile" accept=".json" style="margin: 10px 0;">
+            <button onclick="importData()" class="save-btn" style="background: #ffc107; color: #333;">⬆️ Importer (Écrase tout)</button>
         </div>
     </div>
-<div style="text-align: center; margin-top: 30px; padding-bottom: 40px;">
-    <div style="margin-bottom: 15px;">
-        <button onclick="resetData()" class="btn btn-danger">
-            <i class="fas fa-trash-alt"></i> Réinitialiser l'Année Scolaire
-        </button>
-    </div>
-    
-    <button onclick="signOutUser()" class="btn btn-secondary">
-        <i class="fas fa-sign-out-alt"></i> Déconnexion
-    </button>
-</div>
-</div>
 
-    
+    <div style="text-align: center; margin-top: 30px; padding-bottom: 40px;">
+        <button onclick="resetData()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-right: 10px;">Réinitialiser l'Année</button>
+        <button onclick="signOutUser()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Déconnexion</button>
+    </div>
+</div>    
     <script>
 // =========================================================
 // Configuration Firebase (Vérifiez la ligne databaseURL)
@@ -748,6 +679,19 @@ let currentEditingWeek = null;
 let currentEditingSequenceIndex = null;
 let currentEditingLevel = null;
 let tempSessions = [];
+
+// --- AJOUTEZ CES LIGNES ICI ---
+let courseContentEditor; // Variable pour l'éditeur de contenu du journal
+let courseHomeworkEditor; // Variable pour l'éditeur de devoirs du journal
+
+// Configuration de la barre d'outils riche (utilisée par TOUS les éditeurs)
+const fullToolbarOptions = [
+    ['bold', 'italic', 'underline'],
+    [{ 'color': [] }, { 'background': [] }], // Palette de couleurs
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    ['clean'] // Bouton pour effacer le formatage
+];
+// ------------------------------
 
 // --- FONCTION DE SAUVEGARDE ---
 function saveData() {
@@ -870,6 +814,19 @@ auth.onAuthStateChanged(handleAuthStateChange);
         // ------------------------------------------------------------------
         async function init() {
             await loadData(); // <-- Attendre que les données Firebase soient chargées
+
+            // --- ÉTAPE 1 : INITIALISATION DES ÉDITEURS QUILL (AJOUT ICI) ---
+            // On initialise les éditeurs du journal de bord une seule fois au démarrage
+            courseContentEditor = new Quill('#courseContentQuill', {
+                theme: 'snow',
+                modules: { toolbar: fullToolbarOptions }
+            });
+
+            courseHomeworkEditor = new Quill('#courseHomeworkQuill', {
+                theme: 'snow',
+                modules: { toolbar: fullToolbarOptions }
+            });
+    // ---------------------------------------------------------------
             
             // Tout ce qui suit est exécuté APRÈS le chargement de Firebase
             updateClassSelect();
@@ -1481,12 +1438,7 @@ function saveWeekNotes() {
 
         // Configuration commune de la barre d'outils (Toolbar)
         // Ajout de 'underline' et 'clean' (pour nettoyer le texte)
-        const fullToolbarOptions = [
-            ['bold', 'italic', 'underline'], 
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            ['clean'] 
-        ];
-
+       
         // Initialisation Quill pour le Contenu
         const qContent = new Quill(`#editor-content-${index}`, {
             theme: 'snow',
@@ -1864,6 +1816,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
