@@ -1166,31 +1166,28 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
     const session = sequence.sessions.find(s => s.sessionNum == sessionNum);
     
     if (session) {
-        const contentField = document.getElementById('courseContent');
-        const homeworkField = document.getElementById('courseHomework');
-
-        // --- PROTECTION ---
-        // On vérifie si les champs contiennent déjà quelque chose
-        const hasContent = contentField.value.trim() !== "";
-        const hasHomework = homeworkField.value.trim() !== "";
+        // --- MISE À JOUR POUR QUILL ---
+        // On vérifie si les éditeurs contiennent déjà quelque chose.
+        // On utilise .getText().trim() pour voir s'il y a du vrai texte (pas juste des balises HTML vides)
+        const hasContent = courseContentEditor.getText().trim() !== "";
+        const hasHomework = courseHomeworkEditor.getText().trim() !== "";
 
         if (hasContent || hasHomework) {
-            // Si ce n'est pas vide, on demande confirmation avant d'écraser
             const confirmOverwrite = confirm("Cette séance contient déjà du texte. Voulez-vous remplacer votre saisie par le contenu type de la séquence ?");
             if (!confirmOverwrite) {
-                // Si l'utilisateur refuse, on met quand même à jour le numéro de séance (utile)
                 document.getElementById('courseSessionNum').value = session.sessionNum;
-                return; // On s'arrête là, on ne touche pas au texte
+                return; 
             }
         }
 
-        // Si c'est vide OU si l'utilisateur a dit OK : on remplit
-        contentField.value = session.content || "";
-        homeworkField.value = session.homework || "";
+        // --- INJECTION DU CONTENU DANS QUILL ---
+        // On utilise .root.innerHTML pour injecter le HTML riche (gras, couleurs, puces)
+        courseContentEditor.root.innerHTML = session.content || "";
+        courseHomeworkEditor.root.innerHTML = session.homework || "";
+        
         document.getElementById('courseSessionNum').value = session.sessionNum;
     }
 }
-        
         // =========================================================
         // FONCTIONS D'ÉDITION ET DE SAUVEGARDE DE COURS
         // =========================================================
@@ -1252,7 +1249,7 @@ document.getElementById('nextPeriod').addEventListener('click', () => {
 function saveCourse() {
     if (!currentEditingCourse) return;
     
-    // 1. On récupère les valeurs
+    // 1. On récupère les valeurs des menus déroulants
     const sequenceIdx = document.getElementById('courseSequenceSelect').value;
     const level = document.getElementById('courseLevelSelect').value;
     let sequenceName = '';
@@ -1262,10 +1259,12 @@ function saveCourse() {
         if (sequence) sequenceName = sequence.name;
     }
     
-    // CHANGEMENT ICI : .innerHTML pour capturer le gras/couleurs
-    const content = document.getElementById('courseContent').innerHTML;
-    // CHANGEMENT ICI (si vous avez mis l'éditeur riche pour les devoirs aussi)
-    const homework = document.getElementById('courseHomework').innerHTML;
+    // --- CORRECTION POUR QUILL ICI ---
+    // On ne récupère plus via document.getElementById(...).innerHTML
+    // On demande à l'objet Quill son contenu HTML
+    const content = courseContentEditor.root.innerHTML;
+    const homework = courseHomeworkEditor.root.innerHTML;
+    // ---------------------------------
     
     const sessionNum = parseInt(document.getElementById('courseSessionNum').value, 10) || 1;
     
@@ -1274,7 +1273,7 @@ function saveCourse() {
         date: document.getElementById('courseDate').value,
         sequence: sequenceName, 
         sessionNum: sessionNum, 
-        content: content, // Contiendra maintenant le HTML <b>...</b>
+        content: content,  // Sauvegarde le HTML de Quill (gras, couleurs, listes)
         homework: homework, 
         notes: document.getElementById('courseNotes').value
     };
@@ -1840,6 +1839,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
