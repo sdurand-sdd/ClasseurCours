@@ -836,15 +836,20 @@ auth.onAuthStateChanged(handleAuthStateChange);
 
             // --- ÉTAPE 1 : INITIALISATION DES ÉDITEURS QUILL (AJOUT ICI) ---
             // On initialise les éditeurs du journal de bord une seule fois au démarrage
+            // Empêche la création multiple si init() est rappelé
+        if (!courseContentEditor) {
             courseContentEditor = new Quill('#courseContentQuill', {
                 theme: 'snow',
                 modules: { toolbar: fullToolbarOptions }
             });
+        }
 
+        if (!courseHomeworkEditor) {
             courseHomeworkEditor = new Quill('#courseHomeworkQuill', {
                 theme: 'snow',
                 modules: { toolbar: fullToolbarOptions }
             });
+        }
     // ---------------------------------------------------------------
             
             // Tout ce qui suit est exécuté APRÈS le chargement de Firebase
@@ -1839,6 +1844,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
