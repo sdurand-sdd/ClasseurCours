@@ -1827,23 +1827,11 @@ function clearPlaceholder(elementId) {
     }
 }
 
-// Ajouter des événements pour nettoyer le placeholder
-document.addEventListener('DOMContentLoaded', () => {
-    const courseContent = document.getElementById('courseContent');
-    const courseHomework = document.getElementById('courseHomework');
-    
-    if (courseContent) {
-        courseContent.addEventListener('focus', () => clearPlaceholder('courseContent'));
-    }
-    
-    if (courseHomework) {
-        courseHomework.addEventListener('focus', () => clearPlaceholder('courseHomework'));
-    }
-});
     </script>
 
 </body>
 </html>
+
 
 
 
