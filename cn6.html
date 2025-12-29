@@ -382,6 +382,25 @@
             color: #999;
             font-style: italic;
         }
+
+        /* Égalise la hauteur du champ de texte et du sélecteur de niveau */
+        #sequenceLevel, 
+        #sequenceName {
+            height: 42px; /* Hauteur standard confortable */
+            padding: 8px 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Important pour que le padding ne déforme pas la taille */
+        }
+
+        /* Optionnel : ajouter un petit effet au focus pour le côté "pro" */
+        #sequenceName:focus, 
+        #sequenceLevel:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0,123,255,0.2);
+        }
         
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -1816,6 +1835,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
