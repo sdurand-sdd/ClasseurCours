@@ -746,20 +746,24 @@ function exportToPDF() {
     // --- STYLE GÉNÉRAL ET CORRECTIF LISTES ---
     element.innerHTML = `
         <style>
-            .pdf-container { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-            .pdf-title { text-align: center; color: #2c3e50; border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-bottom: 30px; }
-            .course-card { border: 1px solid #eee; border-radius: 8px; margin-bottom: 30px; overflow: hidden; page-break-inside: avoid; }
-            .course-header { background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #667eea; display: flex; justify-content: space-between; align-items: center; }
-            .course-body { padding: 15px 25px; } /* Marge augmentée à 25px pour décoller du bord */
-            .course-meta { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #ddd; font-size: 0.95em; color: #555; }
-            .content-area { line-height: 1.6; }
-            
-            /* CORRECTIF POUR LES LISTES DE QUILL */
-            .content-area ul, .content-area ol { margin-left: 20px !important; padding-left: 10px !important; }
-            .content-area li { margin-bottom: 5px; }
-            
-            .homework-box { margin-top: 15px; padding: 10px 15px; background: #fffdf0; border-left: 4px solid #f1c40f; font-size: 0.9em; }
-        </style>
+    .pdf-container { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+    .pdf-title { text-align: center; color: #2c3e50; border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-bottom: 30px; }
+    .course-card { border: 1px solid #eee; border-radius: 8px; margin-bottom: 30px; overflow: hidden; page-break-inside: avoid; }
+    .course-header { background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #667eea; display: flex; justify-content: space-between; align-items: center; }
+    .course-body { padding: 15px 30px; } 
+    .course-meta { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #ddd; font-size: 0.95em; color: #555; }
+    
+    /* CORRECTIF LISTES NUMÉROTÉES ET PUCES */
+    .content-area ol { list-style-type: decimal !important; margin-left: 35px !important; padding-left: 0 !important; }
+    .content-area ul { list-style-type: disc !important; margin-left: 35px !important; padding-left: 0 !important; }
+    .content-area li { display: list-item !important; margin-bottom: 5px; padding-left: 5px; }
+
+    /* Gestion des couleurs et surlignages de Quill */
+    .content-area span[style*="background-color"] { padding: 2px 4px; border-radius: 2px; }
+    
+    .homework-box { margin-top: 15px; padding: 10px 15px; background: #fffdf0; border-left: 4px solid #f1c40f; font-size: 0.9em; }
+    .homework-box ol, .homework-box ul { margin-left: 25px !important; }
+    </style>
         <div class="pdf-container">
             <h1 class="pdf-title">Journal de Bord Pédagogique</h1>
             <div id="pdf-content"></div>
@@ -1956,6 +1960,7 @@ function clearPlaceholder(elementId) {
 
 
 </html>
+
 
 
 
