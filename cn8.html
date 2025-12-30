@@ -742,63 +742,76 @@ function exportToPDF() {
     }
 
     const element = document.createElement('div');
-    element.style.padding = '20px';
-    element.style.fontFamily = 'Arial, sans-serif';
-
-    let htmlContent = `<h1 style="text-align: center; color: #2c3e50; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Journal de Bord Pédagogique</h1>`;
-
-    const sortedKeys = Object.keys(state.courses).sort();
-
-    if (sortedKeys.length === 0) {
-        alert("Aucun cours à exporter.");
-        return;
-    }
-
-    sortedKeys.forEach(key => {
-    const course = state.courses[key];
     
-    // 1. Formatage de la date en Français (2026-09-21 -> 21/09/2026)
-    let dateAffichage = key; 
-    if (course.date) {
-        const [year, month, day] = course.date.split('-');
-        dateAffichage = `${day}/${month}/${year}`;
-    }
-    
-    // 2. Nettoyage de la classe (4eme3-2-W4-C1 -> 4eme3)
-    // On sépare par le tiret et on ne garde que le premier élément
-    const classePropre = key.split('-')[0];
-
-    htmlContent += `
-        <div style="margin-bottom: 30px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
-            <div style="background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #667eea; display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: bold; color: #667eea; font-size: 1.1em;">📅 ${dateAffichage}</span>
-                <span style="font-weight: bold; color: #2c3e50;">Classe : ${classePropre}</span>
-            </div>
-            <div style="padding: 15px;">
-                <div style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #ddd; color: #555;">
-                    <strong>Séquence :</strong> ${course.sequence || 'Non définie'} <br>
-                    <strong>Séance n° :</strong> ${course.sessionNum || '1'}
-                </div>
-                <div style="line-height: 1.6; color: #333;">
-                    <div style="margin-bottom: 5px; color: #2c3e50; font-weight: bold;">Contenu du cours :</div>
-                    ${course.content || "<i>Aucun contenu.</i>"}
-                </div>
-                ${course.homework && course.homework !== '<p><br></p>' ? `
-                    <div style="margin-top: 15px; padding: 10px; background: #fffdf0; border-left: 4px solid #f1c40f; font-size: 0.95em;">
-                        <strong>🏠 Devoirs :</strong><br>${course.homework}
-                    </div>
-                ` : ''}
-            </div>
+    // --- STYLE GÉNÉRAL ET CORRECTIF LISTES ---
+    element.innerHTML = `
+        <style>
+            .pdf-container { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+            .pdf-title { text-align: center; color: #2c3e50; border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-bottom: 30px; }
+            .course-card { border: 1px solid #eee; border-radius: 8px; margin-bottom: 30px; overflow: hidden; page-break-inside: avoid; }
+            .course-header { background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #667eea; display: flex; justify-content: space-between; align-items: center; }
+            .course-body { padding: 15px 25px; } /* Marge augmentée à 25px pour décoller du bord */
+            .course-meta { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #ddd; font-size: 0.95em; color: #555; }
+            .content-area { line-height: 1.6; }
+            
+            /* CORRECTIF POUR LES LISTES DE QUILL */
+            .content-area ul, .content-area ol { margin-left: 20px !important; padding-left: 10px !important; }
+            .content-area li { margin-bottom: 5px; }
+            
+            .homework-box { margin-top: 15px; padding: 10px 15px; background: #fffdf0; border-left: 4px solid #f1c40f; font-size: 0.9em; }
+        </style>
+        <div class="pdf-container">
+            <h1 class="pdf-title">Journal de Bord Pédagogique</h1>
+            <div id="pdf-content"></div>
         </div>
     `;
-});
 
-    element.innerHTML = htmlContent;
+    const contentTarget = element.querySelector('#pdf-content');
+    const sortedKeys = Object.keys(state.courses).sort();
+
+    sortedKeys.forEach(key => {
+        const course = state.courses[key];
+        
+        // 1. Date au format Français
+        let dateAffichage = key;
+        if (course.date) {
+            const [year, month, day] = course.date.split('-');
+            dateAffichage = `${day}/${month}/${year}`;
+        }
+        
+        // 2. Classe propre (on prend ce qui est avant le premier tiret)
+        const classePropre = key.split('-')[0];
+
+        contentTarget.innerHTML += `
+            <div class="course-card">
+                <div class="course-header">
+                    <span style="font-weight: bold; color: #667eea;">📅 ${dateAffichage}</span>
+                    <span style="font-weight: bold; color: #2c3e50;">Classe : ${classePropre}</span>
+                </div>
+                <div class="course-body">
+                    <div class="course-meta">
+                        <strong>Séquence :</strong> ${course.sequence || 'Non définie'} <br>
+                        <strong>Séance n° :</strong> ${course.sessionNum || '1'}
+                    </div>
+                    <div class="content-area">
+                        <div style="margin-bottom: 10px; font-weight: bold; color: #2c3e50;">Contenu du cours :</div>
+                        ${course.content || "<i>Aucun contenu.</i>"}
+                    </div>
+                    ${course.homework && course.homework !== '<p><br></p>' ? `
+                        <div class="homework-box">
+                            <strong>🏠 Devoirs :</strong><br>${course.homework}
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    });
 
     const opt = {
         margin: [10, 10],
         filename: 'Journal_de_Bord.pdf',
-        html2canvas: { scale: 2, useCORS: true },
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
@@ -1943,6 +1956,7 @@ function clearPlaceholder(elementId) {
 
 
 </html>
+
 
 
 
