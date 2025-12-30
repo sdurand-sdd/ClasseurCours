@@ -750,33 +750,33 @@ function exportToPDF() {
     }
 
     sortedKeys.forEach(key => {
-        const course = state.courses[key];
-        
-        // --- ADAPTATION DES PROPRIÉTÉS ICI ---
-        // On essaie de récupérer les données selon les noms probables dans votre code
-        const displayDate = key; // Utilise l'identifiant (C1/W3...) comme titre
-        const level = course.level || course.classe || "N/A";
-        const sequence = course.sequence || course.sequenceName || "Non définie";
-        const session = course.session || course.sessionName || "N/A";
+    const course = state.courses[key];
+    
+    // Tentative de récupération des données avec les noms de propriétés probables
+    const displayId = key; 
+    const level = course.level || course.courseLevelSelect || "N/A";
+    const sequence = course.sequence || course.courseSequenceSelect || "Non définie";
+    const session = course.session || course.courseSessionSelect || "N/A";
+    const sessionNum = course.sessionNum || course.courseSessionNum || "";
 
-        htmlContent += `
-            <div style="margin-bottom: 30px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
-                <div style="background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #667eea; display: flex; justify-content: space-between;">
-                    <span style="font-weight: bold; color: #667eea;">📅 ${displayDate}</span>
-                    <span style="font-weight: bold; color: #2c3e50;">Niveau : ${level}</span>
+    htmlContent += `
+        <div style="margin-bottom: 30px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
+            <div style="background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #667eea; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: bold; color: #667eea; font-size: 1.1em;">📅 ${displayId}</span>
+                <span style="font-weight: bold; color: #2c3e50;">Niveau : ${level}</span>
+            </div>
+            <div style="padding: 15px;">
+                <div style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #ddd; color: #555;">
+                    <strong>Séquence :</strong> ${sequence} 
+                    ${session !== "N/A" ? `<br><strong>Séance :</strong> ${session} ${sessionNum ? `(n°${sessionNum})` : ''}` : ''}
                 </div>
-                <div style="padding: 15px;">
-                    <div style="margin-bottom: 10px; font-style: italic; color: #555;">
-                        <strong>Séquence :</strong> ${sequence} — 
-                        <strong>Séance :</strong> ${session}
-                    </div>
-                    <div style="line-height: 1.6; color: #333;">
-                        ${course.content || "Pas de contenu."}
-                    </div>
+                <div style="line-height: 1.6; color: #333;">
+                    ${course.content || "<p><i>Aucun contenu enregistré pour ce cours.</i></p>"}
                 </div>
             </div>
-        `;
-    });
+        </div>
+    `;
+});
 
     element.innerHTML = htmlContent;
 
@@ -1936,4 +1936,5 @@ function clearPlaceholder(elementId) {
 
 
 </html>
+
 
