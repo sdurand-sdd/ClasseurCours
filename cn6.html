@@ -539,7 +539,7 @@
             
             <hr>
             
-            <form id="sequenceForm">
+            <form id="sequenceForm" onsubmit="event.preventDefault(); addSequence();">
                 <h4>Ajouter / Modifier une Séquence</h4>
                 <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                     <div style="flex: 1;">
@@ -1841,6 +1841,7 @@ function clearPlaceholder(elementId) {
 
 </body>
 </html>
+
 
 
 
