@@ -736,6 +736,11 @@ function saveData() {
 }
 
 function exportToPDF() {
+    if (typeof html2pdf === 'undefined') {
+        alert("La bibliothèque PDF n'est pas chargée.");
+        return;
+    }
+
     const element = document.createElement('div');
     element.style.padding = '20px';
     element.style.fontFamily = 'Arial, sans-serif';
@@ -750,52 +755,52 @@ function exportToPDF() {
     }
 
     sortedKeys.forEach(key => {
-    const course = state.courses[key];
-    
-    // Tentative de récupération des données avec les noms de propriétés probables
-    const displayId = key; 
-    const level = course.level || course.courseLevelSelect || "N/A";
-    const sequence = course.sequence || course.courseSequenceSelect || "Non définie";
-    const session = course.session || course.courseSessionSelect || "N/A";
-    const sessionNum = course.sessionNum || course.courseSessionNum || "";
+        const course = state.courses[key];
+        
+        // 1. Extraction de la date et du niveau
+        // Si 'course.date' est vide, on utilise la clé (ex: C1/W3/2/4eme3)
+        const dateAffichage = course.date || key;
+        
+        // Pour le niveau, on essaie de le deviner depuis la clé si ce n'est pas stocké
+        // (Ex: prend la dernière partie après le dernier '/')
+        const partiesClé = key.split('/');
+        const niveauDevine = partiesClé[partiesClé.length - 1];
 
-    htmlContent += `
-        <div style="margin-bottom: 30px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
-            <div style="background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #667eea; display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: bold; color: #667eea; font-size: 1.1em;">📅 ${displayId}</span>
-                <span style="font-weight: bold; color: #2c3e50;">Niveau : ${level}</span>
-            </div>
-            <div style="padding: 15px;">
-                <div style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #ddd; color: #555;">
-                    <strong>Séquence :</strong> ${sequence} 
-                    ${session !== "N/A" ? `<br><strong>Séance :</strong> ${session} ${sessionNum ? `(n°${sessionNum})` : ''}` : ''}
+        htmlContent += `
+            <div style="margin-bottom: 30px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
+                <div style="background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #667eea; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: bold; color: #667eea; font-size: 1.1em;">📅 ${dateAffichage}</span>
+                    <span style="font-weight: bold; color: #2c3e50;">Classe : ${niveauDevine}</span>
                 </div>
-                <div style="line-height: 1.6; color: #333;">
-                    ${course.content || "<p><i>Aucun contenu enregistré pour ce cours.</i></p>"}
+                <div style="padding: 15px;">
+                    <div style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #ddd; color: #555;">
+                        <strong>Séquence :</strong> ${course.sequence || 'Non définie'} <br>
+                        <strong>Séance n° :</strong> ${course.sessionNum || '1'}
+                    </div>
+                    <div style="line-height: 1.6; color: #333;">
+                        <div style="margin-bottom: 10px;"><strong>Contenu du cours :</strong></div>
+                        ${course.content || "<i>Aucun contenu.</i>"}
+                    </div>
+                    ${course.homework && course.homework !== '<p><br></p>' ? `
+                        <div style="margin-top: 15px; padding: 10px; background: #fffdf0; border-left: 4px solid #f1c40f;">
+                            <strong>🏠 Devoirs :</strong><br>${course.homework}
+                        </div>
+                    ` : ''}
                 </div>
             </div>
-        </div>
-    `;
-});
+        `;
+    });
 
     element.innerHTML = htmlContent;
 
-    // 3. Options de configuration du PDF
     const opt = {
-        margin:       [10, 10],
-        filename:     'Journal_de_Bord.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    // 4. Génération
-   html2pdf().set({
         margin: [10, 10],
         filename: 'Journal_de_Bord.pdf',
-        html2canvas: { scale: 2 },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    }).from(element).save();
+    };
+
+    html2pdf().set(opt).from(element).save();
 }
         
 // --- FONCTION DE CHARGEMENT ---
@@ -1936,5 +1941,6 @@ function clearPlaceholder(elementId) {
 
 
 </html>
+
 
 
