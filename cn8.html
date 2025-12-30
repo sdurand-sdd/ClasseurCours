@@ -755,41 +755,43 @@ function exportToPDF() {
     }
 
     sortedKeys.forEach(key => {
-        const course = state.courses[key];
-        
-        // 1. Extraction de la date et du niveau
-        // Si 'course.date' est vide, on utilise la clé (ex: C1/W3/2/4eme3)
-        const dateAffichage = course.date || key;
-        
-        // Pour le niveau, on essaie de le deviner depuis la clé si ce n'est pas stocké
-        // (Ex: prend la dernière partie après le dernier '/')
-        const partiesClé = key.split('/');
-        const niveauDevine = partiesClé[partiesClé.length - 1];
+    const course = state.courses[key];
+    
+    // 1. Formatage de la date en Français (2026-09-21 -> 21/09/2026)
+    let dateAffichage = key; 
+    if (course.date) {
+        const [year, month, day] = course.date.split('-');
+        dateAffichage = `${day}/${month}/${year}`;
+    }
+    
+    // 2. Nettoyage de la classe (4eme3-2-W4-C1 -> 4eme3)
+    // On sépare par le tiret et on ne garde que le premier élément
+    const classePropre = key.split('-')[0];
 
-        htmlContent += `
-            <div style="margin-bottom: 30px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
-                <div style="background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #667eea; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: bold; color: #667eea; font-size: 1.1em;">📅 ${dateAffichage}</span>
-                    <span style="font-weight: bold; color: #2c3e50;">Classe : ${niveauDevine}</span>
-                </div>
-                <div style="padding: 15px;">
-                    <div style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #ddd; color: #555;">
-                        <strong>Séquence :</strong> ${course.sequence || 'Non définie'} <br>
-                        <strong>Séance n° :</strong> ${course.sessionNum || '1'}
-                    </div>
-                    <div style="line-height: 1.6; color: #333;">
-                        <div style="margin-bottom: 10px;"><strong>Contenu du cours :</strong></div>
-                        ${course.content || "<i>Aucun contenu.</i>"}
-                    </div>
-                    ${course.homework && course.homework !== '<p><br></p>' ? `
-                        <div style="margin-top: 15px; padding: 10px; background: #fffdf0; border-left: 4px solid #f1c40f;">
-                            <strong>🏠 Devoirs :</strong><br>${course.homework}
-                        </div>
-                    ` : ''}
-                </div>
+    htmlContent += `
+        <div style="margin-bottom: 30px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
+            <div style="background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #667eea; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: bold; color: #667eea; font-size: 1.1em;">📅 ${dateAffichage}</span>
+                <span style="font-weight: bold; color: #2c3e50;">Classe : ${classePropre}</span>
             </div>
-        `;
-    });
+            <div style="padding: 15px;">
+                <div style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #ddd; color: #555;">
+                    <strong>Séquence :</strong> ${course.sequence || 'Non définie'} <br>
+                    <strong>Séance n° :</strong> ${course.sessionNum || '1'}
+                </div>
+                <div style="line-height: 1.6; color: #333;">
+                    <div style="margin-bottom: 5px; color: #2c3e50; font-weight: bold;">Contenu du cours :</div>
+                    ${course.content || "<i>Aucun contenu.</i>"}
+                </div>
+                ${course.homework && course.homework !== '<p><br></p>' ? `
+                    <div style="margin-top: 15px; padding: 10px; background: #fffdf0; border-left: 4px solid #f1c40f; font-size: 0.95em;">
+                        <strong>🏠 Devoirs :</strong><br>${course.homework}
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+});
 
     element.innerHTML = htmlContent;
 
@@ -1941,6 +1943,7 @@ function clearPlaceholder(elementId) {
 
 
 </html>
+
 
 
 
