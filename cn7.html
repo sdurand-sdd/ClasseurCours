@@ -543,7 +543,7 @@
     <div style="display: flex; gap: 15px; margin-bottom: 15px;">
         <div style="flex: 1;">
             <label>Niveau de Classe</label>
-           <select id="sequenceLevel" style="width: 100%;" onchange="renderFilteredSequences()">
+           <select id="sequenceLevel" style="width: 100%;" onchange="renderSequenceLevelList()">
                 <option value="">-- Niveau --</option>
                 <option value="6">6ème</option>
                 <option value="5">5ème</option>
@@ -1359,81 +1359,49 @@ function saveWeekNotes() {
 }
         
         function renderSequenceLevelList() {
-            const list = document.getElementById('sequenceList'); 
-            if (!list) return;
+    const list = document.getElementById('sequenceList'); 
+    if (!list) return;
 
-            list.innerHTML = '';
-            let totalSequences = 0;
-            const levels = ['6', '5', '4', '3', 'Autre']; 
-
-            levels.forEach(level => {
-                const sequences = state.sequences[level] || [];
-                
-                if (sequences.length > 0) {
-                    list.innerHTML += `<h4 style="margin-top: 15px; color: #667eea;">Niveau ${level} (${sequences.length} séquences)</h4>`;
-                    sequences.forEach((seq, idx) => {
-                        totalSequences++;
-                        list.innerHTML += `
-                            <div class="sequence-item">
-                                <div>
-                                    <strong>${seq.name}</strong>
-                                    <div style="font-size: 0.9em; color: #6c757d; margin-top: 5px;">${seq.sessions.length} séances définies</div>
-                                </div>
-                                <div class="sequence-actions">
-                                    <button class="btn-small edit-btn" onclick="editSequence('${level}', ${idx})">✏️</button>
-                                    <button class="btn-small btn-delete" onclick="deleteSequence('${level}', ${idx})">🗑️</button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                }
-            });
-
-            if (totalSequences === 0) {
-                 list.innerHTML = '<div class="empty-state">Aucune séquence définie dans le catalogue.</div>';
-            }
-        }
-
-        function renderFilteredSequences() {
-            // 1. On récupère le niveau sélectionné
-            const selectedLevel = document.getElementById('sequenceLevel').value;
-            // 2. On cible le conteneur de la liste (souvent id="sequenceList" ou "sequenceLevelList")
-            const listContainer = document.getElementById('sequenceLevelList'); 
+    // On récupère le niveau sélectionné dans le menu déroulant
+    const selectedLevelField = document.getElementById('sequenceLevel');
+    const selectedLevel = selectedLevelField ? selectedLevelField.value : "";
     
-            if (!listContainer) return;
+    list.innerHTML = '';
+    let totalSequences = 0;
 
-            // Si aucun niveau n'est sélectionné
-            if (!selectedLevel) {
-                listContainer.innerHTML = '<div style="color: #999; text-align: center; padding: 10px;">Sélectionnez un niveau pour filtrer les séquences.</div>';
-            return;
-        }
+    // Logique : si un niveau est choisi, on ne regarde que celui-là. Sinon, on affiche tout.
+    const levelsToDisplay = selectedLevel ? [selectedLevel] : ['6', '5', '4', '3', 'Autre'];
 
-            // 3. On récupère les séquences de ce niveau précis dans l'état (state)
-            const sequences = state.sequences[selectedLevel] || [];
-    
-            if (sequences.length === 0) {
-            listContainer.innerHTML = `<div style="color: #999; text-align: center; padding: 10px;">Aucune séquence pour le niveau ${selectedLevel}.</div>`;
-            return;
-        }
-
-            // 4. On génère le HTML filtré
-            let html = '';
-                sequences.forEach((seq, index) => {
-                html += `
-                <div class="sequence-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
-                    <div>
-                        <strong>${seq.name}</strong><br>
-                        <small style="color: #666;">${seq.sessions.length} séances</small>
+    levelsToDisplay.forEach(level => {
+        const sequences = state.sequences[level] || [];
+        
+        if (sequences.length > 0) {
+            // On affiche le titre du niveau
+            list.innerHTML += `<h4 style="margin-top: 15px; color: #667eea; border-bottom: 1px solid #eee; padding-bottom: 5px;">Niveau ${level}</h4>`;
+            
+            sequences.forEach((seq, idx) => {
+                totalSequences++;
+                list.innerHTML += `
+                    <div class="sequence-item" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dotted #eee;">
+                        <div>
+                            <strong>${seq.name}</strong>
+                            <div style="font-size: 0.85em; color: #6c757d;">${seq.sessions.length} séances</div>
+                        </div>
+                        <div class="sequence-actions">
+                            <button type="button" class="btn-small edit-btn" onclick="editSequence('${level}', ${idx})" style="background: #ffc107; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer;">✏️</button>
+                            <button type="button" class="btn-small btn-delete" onclick="deleteSequence('${level}', ${idx})" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer;">🗑️</button>
+                        </div>
                     </div>
-                <div>
-                    <button type="button" onclick="editSequence('${selectedLevel}', ${index})" style="background: #ffc107; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
-                    <button type="button" onclick="deleteSequence('${selectedLevel}', ${index})" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️</button>
-                </div>
-            </div>
-        `;
+                `;
+            });
+        }
     });
-    
-    listContainer.innerHTML = html;
+
+    if (totalSequences === 0) {
+        list.innerHTML = `<div style="color: #999; text-align: center; padding: 20px;">
+            ${selectedLevel ? 'Aucune séquence pour ce niveau.' : 'Le catalogue est vide.'}
+        </div>`;
+    }
 }
         
         function addSessionToSequence() {
@@ -1898,5 +1866,6 @@ function clearPlaceholder(elementId) {
 </body>
 
 </html>
+
 
 
