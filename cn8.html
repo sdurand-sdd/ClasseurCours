@@ -736,39 +736,43 @@ function saveData() {
 }
 
 function exportToPDF() {
-    // 1. Création d'un conteneur temporaire pour la mise en page
     const element = document.createElement('div');
     element.style.padding = '20px';
     element.style.fontFamily = 'Arial, sans-serif';
 
     let htmlContent = `<h1 style="text-align: center; color: #2c3e50; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Journal de Bord Pédagogique</h1>`;
 
-    // 2. On trie les dates pour avoir un ordre chronologique
-    const sortedDates = Object.keys(state.courses).sort();
+    const sortedKeys = Object.keys(state.courses).sort();
 
-    if (sortedDates.length === 0) {
+    if (sortedKeys.length === 0) {
         alert("Aucun cours à exporter.");
         return;
     }
 
-    sortedDates.forEach(date => {
-        const course = state.courses[date];
-        // Transformation de la date (ex: 2023-10-25 -> 25/10/2023)
-        const formattedDate = date.split('-').reverse().join('/');
+    sortedKeys.forEach(key => {
+        const course = state.courses[key];
+        
+        // --- ADAPTATION DES PROPRIÉTÉS ICI ---
+        // On essaie de récupérer les données selon les noms probables dans votre code
+        const displayDate = key; // Utilise l'identifiant (C1/W3...) comme titre
+        const level = course.level || course.classe || "N/A";
+        const sequence = course.sequence || course.sequenceName || "Non définie";
+        const session = course.session || course.sessionName || "N/A";
 
         htmlContent += `
             <div style="margin-bottom: 30px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
                 <div style="background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #667eea; display: flex; justify-content: space-between;">
-                    <span style="font-weight: bold; color: #667eea;">📅 ${formattedDate}</span>
-                    <span style="font-weight: bold; color: #2c3e50;">Niveau : ${course.level || 'N/A'}</span>
+                    <span style="font-weight: bold; color: #667eea;">📅 ${displayDate}</span>
+                    <span style="font-weight: bold; color: #2c3e50;">Niveau : ${level}</span>
                 </div>
                 <div style="padding: 15px;">
                     <div style="margin-bottom: 10px; font-style: italic; color: #555;">
-                        <strong>Séquence :</strong> ${course.sequence || 'Non définie'} — 
-                        <strong>Séance :</strong> ${course.session || 'N/A'}
+                        <strong>Séquence :</strong> ${sequence} — 
+                        <strong>Séance :</strong> ${session}
                     </div>
                     <div style="line-height: 1.6; color: #333;">
-                        ${course.content} </div>
+                        ${course.content || "Pas de contenu."}
+                    </div>
                 </div>
             </div>
         `;
@@ -786,9 +790,13 @@ function exportToPDF() {
     };
 
     // 4. Génération
-    html2pdf().set(opt).from(element).save();
+   html2pdf().set({
+        margin: [10, 10],
+        filename: 'Journal_de_Bord.pdf',
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(element).save();
 }
-
         
 // --- FONCTION DE CHARGEMENT ---
 function loadData() {
@@ -1928,3 +1936,4 @@ function clearPlaceholder(elementId) {
 
 
 </html>
+
