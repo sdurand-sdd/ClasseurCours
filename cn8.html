@@ -442,34 +442,38 @@
         </div>
 
         <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <div>
-                <label for="yearSelect">Année :</label>
-                <select id="yearSelect" onchange="changeYear(this.value)">
-                    <option value="2025-2026">2025-2026</option>
-                    <option value="2026-2027">2026-2027</option>
-                    <option value="2027-2028">2027-2028</option>
-                </select> 
-            </div>
-
-            <div class="class-selector">
-                <label for="classSelect">Classe :</label>
-                <select id="classSelect"></select>
-                <button onclick="openClassManager()">Gérer les classes</button>
-                <button onclick="openSequenceManager()" style="background: #6f42c1; color: white;">Catalogue Séquences</button>
-            </div>
-            
-            <div class="period-nav">
-                <button id="prevPeriod">←</button>
-                <span id="periodInfo" style="font-weight: bold;">Période 1</span>
-                <button id="nextPeriod">→</button>
-            </div>
-            
-            <button onclick="openExportModal()">Importer/Exporter</button>
+    
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div>
+            <label for="yearSelect">Année :</label>
+            <select id="yearSelect" onchange="changeYear(this.value)">
+                <option value="2025-2026">2025-2026</option>
+                <option value="2026-2027">2026-2027</option>
+                <option value="2027-2028">2027-2028</option>
+            </select> 
         </div>
 
-            <button onclick="exportToPDF()" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
-    📕 Télécharger le PDF
-            </button>
+        <div class="class-selector" style="display: flex; align-items: center; gap: 5px;">
+            <label for="classSelect">Classe :</label>
+            <select id="classSelect"></select>
+            <button onclick="openClassManager()">Gérer les classes</button>
+            <button onclick="openSequenceManager()" style="background: #6f42c1; color: white;">Catalogue Séquences</button>
+        </div>
+    </div>
+
+    <div class="period-nav" style="display: flex; align-items: center; gap: 10px;">
+        <button id="prevPeriod">←</button>
+        <span id="periodInfo" style="font-weight: bold;">Période 1</span>
+        <button id="nextPeriod">→</button>
+    </div>
+
+    <div style="display: flex; gap: 8px;">
+        <button onclick="exportToPDF()" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 5px;">
+            📕 PDF
+        </button>
+        <button onclick="openExportModal()" style="padding: 8px 15px;">Importer/Exporter</button>
+    </div>
+</div>
         
         <div class="calendar-grid" id="calendarGrid"></div>
     </div>
@@ -1957,6 +1961,7 @@ function clearPlaceholder(elementId) {
 
 
 </html>
+
 
 
 
