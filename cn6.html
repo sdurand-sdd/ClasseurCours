@@ -1513,25 +1513,30 @@ function saveWeekNotes() {
         }
         
         function addSequence() {
+    // 1. On bloque le bouton pour éviter les clics multiples
+    const saveBtn = document.querySelector('#sequenceForm .save-btn') || document.querySelector('.save-btn');
+    if (saveBtn && saveBtn.disabled) return; 
+    if (saveBtn) saveBtn.disabled = true;
+
     const name = document.getElementById('sequenceName').value.trim();
     const level = document.getElementById('sequenceLevel').value;
 
-    // 1. Validations strictes au début
+    // Validation
     if (!name || !level) {
         alert('Veuillez entrer un nom et choisir un niveau pour la séquence.');
+        if (saveBtn) saveBtn.disabled = false;
         return;
     }
 
     if (tempSessions.length === 0) {
-        if (!confirm("Attention : Vous n'avez ajouté aucune séance à cette séquence. Continuer sans séance ?")) {
+        if (!confirm("Attention : Vous n'avez ajouté aucune séance. Continuer ?")) {
+            if (saveBtn) saveBtn.disabled = false;
             return;
         }
     }
 
-    // 2. Mise à jour du state
-    if (!state.sequences[level]) {
-        state.sequences[level] = [];
-    }
+    // Mise à jour du state
+    if (!state.sequences[level]) state.sequences[level] = [];
     
     const newSequence = {
         name: name,
@@ -1548,34 +1553,25 @@ function saveWeekNotes() {
         state.sequences[level].push(newSequence);
     }
     
-    // --- CHANGEMENT STRATÉGIQUE ICI ---
-    
-    // 3. On affiche l'alerte de succès TOUT DE SUITE avant de toucher au DOM
-    // Cela évite que le rafraîchissement de la liste ne crée un conflit
-    alert(`Séquence "${name}" sauvegardée pour le niveau ${level}.`);
-
-    // 4. On lance la sauvegarde et le rafraîchissement APRÈS le "OK" de l'utilisateur
+    // SAUVEGARDE
     saveData();
     
-   // 1. On affiche l'alerte de succès
+    // UNE SEULE ALERTE ICI
     alert(`Séquence "${name}" sauvegardée pour le niveau ${level}.`);
 
-    // 2. On attend 100ms que la boîte alert soit bien fermée par le navigateur
+    // NETTOYAGE APRÈS LE "OK"
     setTimeout(() => {
-        // On vide le champ du nom
-        document.getElementById('sequenceName').value = "";
-        
-        // On réinitialise l'état interne (index, sessions temporaires, etc.)
+        // On réinitialise l'interface
         closeSequenceManager(false); 
-        
-        // On rafraîchit la liste visuelle des séquences
         renderSequenceLevelList();
 
-        // Bonus : On s'assure que la zone des séances redevient vide visuellement
         const sessionsList = document.getElementById('sequenceSessionsList');
         if (sessionsList) {
             sessionsList.innerHTML = '<div style="color: #999; text-align: center;">Aucune séance.</div>';
         }
+        
+        // On débloque le bouton pour la prochaine fois
+        if (saveBtn) saveBtn.disabled = false;
     }, 100);
 }
         
@@ -1860,6 +1856,7 @@ function clearPlaceholder(elementId) {
 
 </body>
 </html>
+
 
 
 
