@@ -539,36 +539,33 @@
             
             <hr>
             
-            <form id="sequenceForm" onsubmit="event.preventDefault(); addSequence();">
-                <h4>Ajouter / Modifier une Séquence</h4>
-                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                    <div style="flex: 1;">
-                        <label>Niveau de Classe</label>
-                        <select id="sequenceLevel" required style="width: 100%;">
-                            <option value="">-- Niveau --</option>
-                            <option value="6">6ème</option>
-                            <option value="5">5ème</option>
-                            <option value="4">4ème</option>
-                            <option value="3">3ème</option>
-                        </select>
-                    </div>
-                    <div style="flex: 3;">
-                        <label>Nom de la Séquence (Thème)</label>
-                        <input type="text" id="sequenceName" required style="width: 100%;">
-                    </div>
-                </div>
+            <div id="sequenceForm"> <h4>Ajouter / Modifier une Séquence</h4>
+    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+        <div style="flex: 1;">
+            <label>Niveau de Classe</label>
+            <select id="sequenceLevel" style="width: 100%;"> <option value="">-- Niveau --</option>
+                <option value="6">6ème</option>
+                <option value="5">5ème</option>
+                <option value="4">4ème</option>
+                <option value="3">3ème</option>
+            </select>
+        </div>
+        <div style="flex: 3;">
+            <label>Nom de la Séquence (Thème)</label>
+            <input type="text" id="sequenceName" style="width: 100%;"> </div>
+    </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <label><strong>Séances de la Séquence</strong></label>
-                    <button type="button" class="btn-small" style="background: #28a745; color: white;" onclick="addSessionToSequence()">+ Ajouter Séance</button>
-                </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <label><strong>Séances de la Séquence</strong></label>
+        <button type="button" class="btn-small" style="background: #28a745; color: white;" onclick="addSessionToSequence()">+ Ajouter Séance</button>
+    </div>
 
-                <div id="sequenceSessionsList" style="max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 15px; background: #f1f1f1; border-radius: 5px;">
-                    <div style="color: #999; text-align: center;">Aucune séance.</div>
-                </div>
-                
-                <button type="submit" class="save-btn" style="margin-top: 20px;">💾 Enregistrer la Séquence Complète</button>
-            </form>
+    <div id="sequenceSessionsList" style="max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 15px; background: #f1f1f1; border-radius: 5px;">
+        <div style="color: #999; text-align: center;">Aucune séance.</div>
+    </div>
+    
+    <button type="button" class="save-btn" onclick="addSequence()" style="margin-top: 20px;">💾 Enregistrer la Séquence Complète</button>
+</div>
         </div>
     </div>
 
@@ -1856,6 +1853,7 @@ function clearPlaceholder(elementId) {
 
 </body>
 </html>
+
 
 
 
