@@ -743,27 +743,27 @@ function exportToPDF() {
 
     const element = document.createElement('div');
     
-    // --- STYLE GÉNÉRAL ET CORRECTIF LISTES ---
     element.innerHTML = `
         <style>
-    .pdf-container { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-    .pdf-title { text-align: center; color: #2c3e50; border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-bottom: 30px; }
-    .course-card { border: 1px solid #eee; border-radius: 8px; margin-bottom: 30px; overflow: hidden; page-break-inside: avoid; }
-    .course-header { background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #667eea; display: flex; justify-content: space-between; align-items: center; }
-    .course-body { padding: 15px 30px; } 
-    .course-meta { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #ddd; font-size: 0.95em; color: #555; }
-    
-    /* CORRECTIF LISTES NUMÉROTÉES ET PUCES */
-    .content-area ol { list-style-type: decimal !important; margin-left: 35px !important; padding-left: 0 !important; }
-    .content-area ul { list-style-type: disc !important; margin-left: 35px !important; padding-left: 0 !important; }
-    .content-area li { display: list-item !important; margin-bottom: 5px; padding-left: 5px; }
-
-    /* Gestion des couleurs et surlignages de Quill */
-    .content-area span[style*="background-color"] { padding: 2px 4px; border-radius: 2px; }
-    
-    .homework-box { margin-top: 15px; padding: 10px 15px; background: #fffdf0; border-left: 4px solid #f1c40f; font-size: 0.9em; }
-    .homework-box ol, .homework-box ul { margin-left: 25px !important; }
-    </style>
+            .pdf-container { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+            .pdf-title { text-align: center; color: #2c3e50; border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-bottom: 30px; }
+            .course-card { border: 1px solid #eee; border-radius: 8px; margin-bottom: 30px; overflow: hidden; page-break-inside: avoid; }
+            .course-header { background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #667eea; display: flex; justify-content: space-between; align-items: center; }
+            .course-body { padding: 15px 35px; } 
+            .course-meta { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #ddd; font-size: 0.95em; color: #555; }
+            
+            /* FORÇAGE DES LISTES ET INDENTATIONS QUILL */
+            .content-area ol { list-style-type: decimal !important; margin-left: 20px !important; padding-left: 15px !important; }
+            .content-area ul { list-style-type: disc !important; margin-left: 20px !important; padding-left: 15px !important; }
+            .content-area li { display: list-item !important; margin-bottom: 5px; }
+            
+            /* Patch pour les indentations spécifiques de Quill (.ql-indent-1, etc.) */
+            .ql-indent-1 { padding-left: 3em !important; }
+            .ql-indent-2 { padding-left: 6em !important; }
+            .ql-indent-3 { padding-left: 9em !important; }
+            
+            .homework-box { margin-top: 15px; padding: 10px 15px; background: #fffdf0; border-left: 4px solid #f1c40f; font-size: 0.9em; }
+        </style>
         <div class="pdf-container">
             <h1 class="pdf-title">Journal de Bord Pédagogique</h1>
             <div id="pdf-content"></div>
@@ -776,14 +776,14 @@ function exportToPDF() {
     sortedKeys.forEach(key => {
         const course = state.courses[key];
         
-        // 1. Date au format Français
+        // Date FR
         let dateAffichage = key;
         if (course.date) {
             const [year, month, day] = course.date.split('-');
             dateAffichage = `${day}/${month}/${year}`;
         }
         
-        // 2. Classe propre (on prend ce qui est avant le premier tiret)
+        // Classe propre
         const classePropre = key.split('-')[0];
 
         contentTarget.innerHTML += `
@@ -798,7 +798,7 @@ function exportToPDF() {
                         <strong>Séance n° :</strong> ${course.sessionNum || '1'}
                     </div>
                     <div class="content-area">
-                        <div style="margin-bottom: 10px; font-weight: bold; color: #2c3e50;">Contenu du cours :</div>
+                        <div style="margin-bottom: 8px; font-weight: bold; color: #2c3e50;">Contenu du cours :</div>
                         ${course.content || "<i>Aucun contenu.</i>"}
                     </div>
                     ${course.homework && course.homework !== '<p><br></p>' ? `
@@ -811,15 +811,12 @@ function exportToPDF() {
         `;
     });
 
-    const opt = {
+    html2pdf().set({
         margin: [10, 10],
         filename: 'Journal_de_Bord.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    html2pdf().set(opt).from(element).save();
+    }).from(element).save();
 }
         
 // --- FONCTION DE CHARGEMENT ---
@@ -1960,6 +1957,7 @@ function clearPlaceholder(elementId) {
 
 
 </html>
+
 
 
 
