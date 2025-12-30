@@ -543,7 +543,8 @@
     <div style="display: flex; gap: 15px; margin-bottom: 15px;">
         <div style="flex: 1;">
             <label>Niveau de Classe</label>
-            <select id="sequenceLevel" style="width: 100%;"> <option value="">-- Niveau --</option>
+           <select id="sequenceLevel" style="width: 100%;" onchange="renderFilteredSequences()">
+                <option value="">-- Niveau --</option>
                 <option value="6">6ème</option>
                 <option value="5">5ème</option>
                 <option value="4">4ème</option>
@@ -1393,6 +1394,48 @@ function saveWeekNotes() {
             }
         }
 
+        function renderFilteredSequences() {
+            // 1. On récupère le niveau sélectionné
+            const selectedLevel = document.getElementById('sequenceLevel').value;
+            // 2. On cible le conteneur de la liste (souvent id="sequenceList" ou "sequenceLevelList")
+            const listContainer = document.getElementById('sequenceLevelList'); 
+    
+            if (!listContainer) return;
+
+            // Si aucun niveau n'est sélectionné
+            if (!selectedLevel) {
+                listContainer.innerHTML = '<div style="color: #999; text-align: center; padding: 10px;">Sélectionnez un niveau pour filtrer les séquences.</div>';
+            return;
+        }
+
+            // 3. On récupère les séquences de ce niveau précis dans l'état (state)
+            const sequences = state.sequences[selectedLevel] || [];
+    
+            if (sequences.length === 0) {
+            listContainer.innerHTML = `<div style="color: #999; text-align: center; padding: 10px;">Aucune séquence pour le niveau ${selectedLevel}.</div>`;
+            return;
+        }
+
+            // 4. On génère le HTML filtré
+            let html = '';
+                sequences.forEach((seq, index) => {
+                html += `
+                <div class="sequence-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+                    <div>
+                        <strong>${seq.name}</strong><br>
+                        <small style="color: #666;">${seq.sessions.length} séances</small>
+                    </div>
+                <div>
+                    <button type="button" onclick="editSequence('${selectedLevel}', ${index})" style="background: #ffc107; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
+                    <button type="button" onclick="deleteSequence('${selectedLevel}', ${index})" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️</button>
+                </div>
+            </div>
+        `;
+    });
+    
+    listContainer.innerHTML = html;
+}
+        
         function addSessionToSequence() {
             const nextNum = tempSessions.length + 1;
             tempSessions.push({
@@ -1853,3 +1896,4 @@ function clearPlaceholder(elementId) {
 </body>
 
 </html>
+
