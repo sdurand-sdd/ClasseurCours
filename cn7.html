@@ -1600,9 +1600,11 @@ function saveWeekNotes() {
 
     // NETTOYAGE APRÈS LE "OK"
     setTimeout(() => {
-        // On réinitialise l'interface
+     // On réinitialise l'interface
         closeSequenceManager(false); 
         renderSequenceLevelList();
+     // À ajouter à la fin de addSequence()
+        renderFilteredSequences();
 
         const sessionsList = document.getElementById('sequenceSessionsList');
         if (sessionsList) {
@@ -1638,7 +1640,7 @@ function saveWeekNotes() {
                 state.sequences[level].splice(index, 1);
                 saveData();
                 renderSequenceLevelList();
-            }
+                }
         }
 
 
@@ -1896,4 +1898,5 @@ function clearPlaceholder(elementId) {
 </body>
 
 </html>
+
 
