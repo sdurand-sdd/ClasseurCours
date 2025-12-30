@@ -196,7 +196,11 @@
             border-left: 5px solid #667eea;
             cursor: pointer;
             transition: transform 0.1s, box-shadow 0.1s;
-            min-height: 80px;
+            min-height: 130px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
 
         .course-slot:hover, .notes-slot:hover {
@@ -218,8 +222,9 @@
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
+            line-height: 1.4; /* Améliore la lisibilité */
         }
         
         /* Modal Styles */
@@ -1831,6 +1836,7 @@ function clearPlaceholder(elementId) {
 
 </body>
 </html>
+
 
 
 
