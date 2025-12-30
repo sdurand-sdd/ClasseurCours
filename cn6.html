@@ -1340,21 +1340,26 @@ function saveWeekNotes() {
             document.getElementById('sequenceModal').classList.add('active');
         }
 
-        function closeSequenceManager(closeModal = true) {
-            if (closeModal) {
-                 document.getElementById('sequenceModal').classList.remove('active');
-            }
-            
-            // Réinitialiser les champs de saisie
-            document.getElementById('sequenceName').value = '';
-            document.getElementById('sequenceLevel').value = '';
-            
-            // Réinitialiser les variables d'état temporaires
-            tempSessions = [];
-            currentEditingSequenceIndex = null;
-            currentEditingLevel = null;
-            renderSequenceSessions(); // Vider l'affichage des sessions
-        }
+       function closeSequenceManager(closeModal = true) {
+    if (closeModal) {
+        document.getElementById('sequenceModal').classList.remove('active');
+    }
+    
+    // Au lieu de vider les champs un par un, on utilise reset() 
+    // qui est mieux géré par les navigateurs
+    const form = document.getElementById('sequenceForm');
+    if (form) {
+        form.reset(); 
+    }
+    
+    // Réinitialiser les variables d'état temporaires
+    tempSessions = [];
+    currentEditingSequenceIndex = null;
+    currentEditingLevel = null;
+    
+    // On rafraîchit l'affichage des sessions (qui sera vide puisque tempSessions est vide)
+    renderSequenceSessions(); 
+}
         
         function renderSequenceLevelList() {
             const list = document.getElementById('sequenceList'); 
@@ -1552,12 +1557,26 @@ function saveWeekNotes() {
     // 4. On lance la sauvegarde et le rafraîchissement APRÈS le "OK" de l'utilisateur
     saveData();
     
-    // On vide les champs manuellement pour être sûr
-    document.getElementById('sequenceName').value = "";
-    
-    // On réinitialise l'état et la liste
-    closeSequenceManager(false); 
-    renderSequenceLevelList();
+   // 1. On affiche l'alerte de succès
+    alert(`Séquence "${name}" sauvegardée pour le niveau ${level}.`);
+
+    // 2. On attend 100ms que la boîte alert soit bien fermée par le navigateur
+    setTimeout(() => {
+        // On vide le champ du nom
+        document.getElementById('sequenceName').value = "";
+        
+        // On réinitialise l'état interne (index, sessions temporaires, etc.)
+        closeSequenceManager(false); 
+        
+        // On rafraîchit la liste visuelle des séquences
+        renderSequenceLevelList();
+
+        // Bonus : On s'assure que la zone des séances redevient vide visuellement
+        const sessionsList = document.getElementById('sequenceSessionsList');
+        if (sessionsList) {
+            sessionsList.innerHTML = '<div style="color: #999; text-align: center;">Aucune séance.</div>';
+        }
+    }, 100);
 }
         
         function editSequence(level, index) {
@@ -1841,6 +1860,7 @@ function clearPlaceholder(elementId) {
 
 </body>
 </html>
+
 
 
 
