@@ -1342,12 +1342,11 @@ function saveWeekNotes() {
         document.getElementById('sequenceModal').classList.remove('active');
     }
     
-    // Au lieu de vider les champs un par un, on utilise reset() 
-    // qui est mieux géré par les navigateurs
-    const form = document.getElementById('sequenceForm');
-    if (form) {
-        form.reset(); 
-    }
+    const nameField = document.getElementById('sequenceName');
+    const levelField = document.getElementById('sequenceLevel');
+    
+    if (nameField) nameField.value = '';
+    if (levelField) levelField.value = '';
     
     // Réinitialiser les variables d'état temporaires
     tempSessions = [];
@@ -1853,6 +1852,7 @@ function clearPlaceholder(elementId) {
 
 </body>
 </html>
+
 
 
 
