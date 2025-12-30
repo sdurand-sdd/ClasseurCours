@@ -1508,56 +1508,57 @@ function saveWeekNotes() {
         }
         
         function addSequence() {
-            
-            const name = document.getElementById('sequenceName').value.trim();
-            const level = document.getElementById('sequenceLevel').value;
+    const name = document.getElementById('sequenceName').value.trim();
+    const level = document.getElementById('sequenceLevel').value;
 
-            if (!name || !level) {
-                alert('Veuillez entrer un nom et choisir un niveau pour la séquence.');
-                return;
-            }
+    // 1. Validations strictes au début
+    if (!name || !level) {
+        alert('Veuillez entrer un nom et choisir un niveau pour la séquence.');
+        return;
+    }
 
-            if (tempSessions.length === 0) {
-                if (!confirm("Attention : Vous n'avez ajouté aucune séance à cette séquence. Continuer sans séance ?")) {
-                    // Si l'utilisateur annule, on sort de la fonction
-                    return;
-                }
-            }
-
-            // Assurer que l'objet state.sequences[level] existe
-            if (!state.sequences[level]) {
-                state.sequences[level] = [];
-            }
-            
-            const newSequence = {
-                name: name,
-                level: level,
-                sessions: tempSessions 
-            };
-            
-            // Logique de modification ou d'ajout
-            if (currentEditingSequenceIndex !== null && currentEditingLevel === level) {
-                // Modification (si le niveau n'a pas changé)
-                state.sequences[level][currentEditingSequenceIndex] = newSequence;
-            } else {
-                 // Si le niveau a changé OU c'est un ajout
-                 
-                 // 1. Si on était en mode édition (index non null), supprimer l'ancienne séquence
-                 if (currentEditingSequenceIndex !== null && currentEditingLevel) {
-                     state.sequences[currentEditingLevel].splice(currentEditingSequenceIndex, 1);
-                 }
-                 
-                 // 2. Ajouter la nouvelle
-                 state.sequences[level].push(newSequence);
-            }
-            
-            saveData();
-            // Réinitialiser et rafraîchir l'affichage
-            closeSequenceManager(false); // Réinitialise les variables mais ne ferme pas la modale
-            renderSequenceLevelList(); // Rafraîchit la liste des séquences
-            
-            alert(`Séquence "${name}" sauvegardée pour le niveau ${level}.`);
+    if (tempSessions.length === 0) {
+        if (!confirm("Attention : Vous n'avez ajouté aucune séance à cette séquence. Continuer sans séance ?")) {
+            return;
         }
+    }
+
+    // 2. Mise à jour du state
+    if (!state.sequences[level]) {
+        state.sequences[level] = [];
+    }
+    
+    const newSequence = {
+        name: name,
+        level: level,
+        sessions: tempSessions 
+    };
+    
+    if (currentEditingSequenceIndex !== null && currentEditingLevel === level) {
+        state.sequences[level][currentEditingSequenceIndex] = newSequence;
+    } else {
+        if (currentEditingSequenceIndex !== null && currentEditingLevel) {
+            state.sequences[currentEditingLevel].splice(currentEditingSequenceIndex, 1);
+        }
+        state.sequences[level].push(newSequence);
+    }
+    
+    // --- CHANGEMENT STRATÉGIQUE ICI ---
+    
+    // 3. On affiche l'alerte de succès TOUT DE SUITE avant de toucher au DOM
+    // Cela évite que le rafraîchissement de la liste ne crée un conflit
+    alert(`Séquence "${name}" sauvegardée pour le niveau ${level}.`);
+
+    // 4. On lance la sauvegarde et le rafraîchissement APRÈS le "OK" de l'utilisateur
+    saveData();
+    
+    // On vide les champs manuellement pour être sûr
+    document.getElementById('sequenceName').value = "";
+    
+    // On réinitialise l'état et la liste
+    closeSequenceManager(false); 
+    renderSequenceLevelList();
+}
         
         function editSequence(level, index) {
             const sequence = state.sequences[level][index];
@@ -1840,6 +1841,7 @@ function clearPlaceholder(elementId) {
 
 </body>
 </html>
+
 
 
 
